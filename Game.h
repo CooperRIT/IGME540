@@ -24,6 +24,11 @@ private:
 	void LoadShaders();
 	void CreateGeometry();
 
+	//Gui Helper Methods
+	void UpdateImGui(float deltaTime);
+	void BuildUI();
+	void ChangeWindowColor(float r, float g, float b, float a);
+
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//     Component Object Model, which DirectX objects do
@@ -37,5 +42,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+	//Gui Variables
+	int currentSliderValue;
+	int maxSliderValue = 100;
+	int minSliderValue = 0;
+
+	bool demoWindowState = true;
+
+	float color[4];
 };
 
