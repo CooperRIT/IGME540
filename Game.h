@@ -2,9 +2,17 @@
 
 #include "Mesh.h"
 #include <memory>
+#include <DirectXMath.h>
 
 #include <d3d11.h>
 #include <wrl/client.h>
+
+
+struct VertexShaderToCopyToGpuToGPU
+{
+	DirectX::XMFLOAT4 colorTint;
+	DirectX::XMFLOAT3 offset;
+};
 
 class Game
 {
@@ -25,21 +33,11 @@ private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
 	void LoadShaders();
-	void CreateGeometry();
 
 	//Gui Helper Methods
 	void UpdateImGui(float deltaTime);
 	void BuildUI();
 	void ChangeWindowColor(float r, float g, float b, float a);
-
-	// Note the usage of ComPtr below
-	//  - This is a smart pointer for objects that abide by the
-	//     Component Object Model, which DirectX objects do
-	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
-
-	// Buffers to hold actual geometry data
-	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
 	// Shaders and shader-related constructs
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
@@ -59,6 +57,9 @@ private:
 	std::shared_ptr<Mesh> triangle;
 	std::shared_ptr<Mesh> square;
 	std::shared_ptr<Mesh> object;
+
+	//constantbuffer
+	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
 };
 

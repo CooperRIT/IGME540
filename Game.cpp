@@ -62,11 +62,12 @@ void Game::Initialize()
 
 	Vertex objectVerticies[] =
 	{
-		{XMFLOAT3(.6f, 1.0f, 0.0f), red},
-		{XMFLOAT3(1.0f, 1.0f, 0.0f), blue},
-		{XMFLOAT3(.6f, .6f, 0.0f), green},//Middle
-		{XMFLOAT3(1.0f, .2f, 0.0f), red},
-		{XMFLOAT3(.6f, .2f, 0.0f), blue},
+		{XMFLOAT3(.6f, 1.0f, 0.0f), green},// Top Top
+		{XMFLOAT3(.8f, 0.7f, 0.0f), green},//Top Right
+		{XMFLOAT3(.4f, 0.7f, 0.0f), green},//Top left
+		{XMFLOAT3(0.6f, .4f, 0.0f), green},//Bottom leff right
+		{XMFLOAT3(.2f, .4f, 0.0f), green},//Bottom left left
+		{XMFLOAT3(1.0f, .4f, 0.0f), green},//Bottom right right
 	};
 
 
@@ -81,13 +82,14 @@ void Game::Initialize()
 	unsigned int objectIndicies[] =
 	{
 		0, 1, 2,
-		2, 3, 4
+		2, 3, 4,
+		1, 5, 3
 	};
 
 
 	triangle = std::make_shared<Mesh>(triangleVerticies, 3, triangleIndicies, 3);
 	square = std::make_shared<Mesh>(squareVerticies, 4, squareIndicies, 6);
-	object = std::make_shared<Mesh>(objectVerticies, 5, objectIndicies, 6);
+	object = std::make_shared<Mesh>(objectVerticies, 6, objectIndicies, 9);
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -109,6 +111,24 @@ void Game::Initialize()
 		//    these calls will need to happen multiple times per frame
 		Graphics::Context->VSSetShader(vertexShader.Get(), 0, 0);
 		Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
+
+
+
+		unsigned int bufferSize = sizeof(VertexShaderToCopyToGpuToGPU);
+		bufferSize = (bufferSize + 15) /16 * 16;
+
+		D3D11_BUFFER_DESC cbDesc{};
+		cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cbDesc.ByteWidth = 32;
+		cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+		cbDesc.MiscFlags = 0;
+		cbDesc.StructureByteStride = 0;
+
+		Graphics::Device->CreateBuffer(&cbDesc, 0, constantBuffer.GetAddressOf());
+
+		//Actually Bind The Buffer
+		Graphics::Context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 	}
 
 	//Initialize Window Color
@@ -239,55 +259,41 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	//Send data to the GPU via the constant buffer
+
+	//Collect Data Locallu
+	VertexShaderToCopyToGpuToGPU dataToCopy{};
+	dataToCopy.colorTint = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+	dataToCopy.offset = XMFLOAT3(.1f, 0.0, 0.0f);
+
+	//First we need to Map the buffer
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	Graphics::Context->Map(
+		constantBuffer.Get(),
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&mapped);
+
+	//Copy To GPU using memcpy
+	memcpy(mapped.pData, &dataToCopy, sizeof(VertexShaderToCopyToGpuToGPU));
+
+	//Unmap when done
+	Graphics::Context->Unmap(constantBuffer.Get(), 0);
+
 	// DRAW geometry
 	// - These steps are generally repeated for EACH object you draw
 	// - Other Direct3D calls will also be necessary to do more complex things
 	{
-		// Set buffers in the input assembler (IA) stage
-		//  - Do this ONCE PER OBJECT, since each object may have different geometry
-		//  - For this demo, this step *could* simply be done once during Init()
-		//  - However, this needs to be done between EACH DrawIndexed() call
-		//     when drawing different geometry, so it's here as an example
-
-
 		//DrawTraiangle
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		Graphics::Context->IASetVertexBuffers(0, 1, triangle->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-		Graphics::Context->IASetIndexBuffer(triangle->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		// Tell Direct3D to draw
-		//  - Begins the rendering pipeline on the GPU
-		//  - Do this ONCE PER OBJECT you intend to draw
-		//  - This will use all currently set Direct3D resources (shaders, buffers, etc)
-		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-		//     vertices in the currently set VERTEX BUFFER
-		Graphics::Context->DrawIndexed(
-			triangle->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+		triangle->Draw();
 
 		//Draw Square
-		Graphics::Context->IASetVertexBuffers(0, 1, square->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-		Graphics::Context->IASetIndexBuffer(square->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		Graphics::Context->DrawIndexed(
-			square->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+		square->Draw();
 
 
 		//Draw Object
-		Graphics::Context->IASetVertexBuffers(0, 1, object->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-		Graphics::Context->IASetIndexBuffer(object->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		Graphics::Context->DrawIndexed(
-			object->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
-
-
-		
+		object->Draw();
 	}
 
 
@@ -352,18 +358,18 @@ void::Game::BuildUI()
 
 	if (ImGui::CollapsingHeader("Meshes"))
 	{
-		ImGui::Text("Triangle: \n");
+		ImGui::Text("Triangle:");
 		ImGui::Text("Triangles: %i", 1);
 		ImGui::Text("Vertices: %i", triangle->GetVertexCount());
 		ImGui::Text("Indices: %i", triangle->GetIndexCount());
-
+		ImGui::Text("\n");
 		ImGui::Text("Quad: \n");
 		ImGui::Text("Triangles: %i", 2);
 		ImGui::Text("Vertices: %i", square->GetVertexCount());
 		ImGui::Text("Indices: %i", square->GetIndexCount());
-
+		ImGui::Text("\n");
 		ImGui::Text("Object: \n");
-		ImGui::Text("Triangles: %i", 2);
+		ImGui::Text("Triangles: %i", 3);
 		ImGui::Text("Vertices: %i", object->GetVertexCount());
 		ImGui::Text("Indices: %i", object->GetIndexCount());
 	} 
