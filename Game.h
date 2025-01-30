@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Mesh.h"
+#include <memory>
+
 #include <d3d11.h>
 #include <wrl/client.h>
 
@@ -51,5 +54,11 @@ private:
 	bool demoWindowState = true;
 
 	float color[4];
+
+	//Mesh Variables
+	std::shared_ptr<Mesh> triangle;
+	std::shared_ptr<Mesh> square;
+	std::shared_ptr<Mesh> object;
+
 };
 
