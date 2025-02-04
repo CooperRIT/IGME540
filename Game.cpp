@@ -113,13 +113,13 @@ void Game::Initialize()
 		Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 
 
-
+		//Create a constant buffer
 		unsigned int bufferSize = sizeof(VertexShaderToCopyToGpuToGPU);
 		bufferSize = (bufferSize + 15) /16 * 16;
 
 		D3D11_BUFFER_DESC cbDesc{};
 		cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		cbDesc.ByteWidth = 32;
+		cbDesc.ByteWidth = bufferSize;
 		cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		cbDesc.Usage = D3D11_USAGE_DYNAMIC;
 		cbDesc.MiscFlags = 0;
@@ -261,10 +261,21 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	//Send data to the GPU via the constant buffer
 
+	//Rotate around Z based on time
+	XMMATRIX trMat = XMMatrixTranslation(sin(totalTime), 0, 0);
+	XMMATRIX rotZMat = XMMatrixRotationZ(totalTime);
+
+
+	XMFLOAT4X4 tr;
+	XMFLOAT4X4 rotZ;
+	XMStoreFloat4x4(&rotZ, rotZMat);
+	XMStoreFloat4x4(&tr, trMat);
+
 	//Collect Data Locallu
 	VertexShaderToCopyToGpuToGPU dataToCopy{};
 	dataToCopy.colorTint = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
-	dataToCopy.offset = XMFLOAT3(.1f, 0.0, 0.0f);
+	dataToCopy.transform = tr;
+
 
 	//First we need to Map the buffer
 	D3D11_MAPPED_SUBRESOURCE mapped{};
