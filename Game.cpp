@@ -30,6 +30,8 @@ void Game::Initialize()
 	ImGui_ImplDX11_Init(Graphics::Device.Get(), Graphics::Context.Get());
 	// Pick a style (uncomment one of these 3)
 	ImGui::StyleColorsDark();
+
+	transform = Transform();
 	//ImGui::StyleColorsLight();
 	//ImGui::StyleColorsClassic();
 
@@ -131,8 +133,9 @@ void Game::Initialize()
 		Graphics::Context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 	}
 
-	//Initialize Window Color
-	ChangeWindowColor(0.4f, 0.6f, 0.75f, 0.0f);
+	//Initialize Window Color and color tint
+	ChangeColor(color, 0.4f, 0.6f, 0.75f, 0.0f);
+	ChangeColor(objectColorTint, 1.0f, 1.0f, 1.0f, 0.0f);
 }
 
 
@@ -242,6 +245,8 @@ void Game::Update(float deltaTime, float totalTime)
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))
 		Window::Quit();
+
+	//transform.SetPosition(sin(totalTime), 0, 0);
 }
 
 
@@ -262,19 +267,24 @@ void Game::Draw(float deltaTime, float totalTime)
 	//Send data to the GPU via the constant buffer
 
 	//Rotate around Z based on time
-	XMMATRIX trMat = XMMatrixTranslation(sin(totalTime), 0, 0);
-	XMMATRIX rotZMat = XMMatrixRotationZ(totalTime);
+	/*XMMATRIX trMat = XMMatrixTranslation(sin(totalTime), 0, 0);
+	XMMATRIX rotZMat = XMMatrixRotationZ(totalTime);*/
 
 
-	XMFLOAT4X4 tr;
+	/*XMFLOAT4X4 tr;
 	XMFLOAT4X4 rotZ;
 	XMStoreFloat4x4(&rotZ, rotZMat);
-	XMStoreFloat4x4(&tr, trMat);
+	XMStoreFloat4x4(&tr, trMat);*/
+
+	//
+	XMFLOAT4 _color(objectColorTint[0], objectColorTint[1], objectColorTint[2], objectColorTint[3]);
+	//XMFLOAT3 _offset(objectOffset[0], objectOffset[1], objectOffset[2]);
+
 
 	//Collect Data Locallu
 	VertexShaderToCopyToGpuToGPU dataToCopy{};
-	dataToCopy.colorTint = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
-	dataToCopy.transform = tr;
+	dataToCopy.colorTint = _color;
+	dataToCopy.offset = transform.GetWorldMatrix();
 
 
 	//First we need to Map the buffer
@@ -301,7 +311,6 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		//Draw Square
 		square->Draw();
-
 
 		//Draw Object
 		object->Draw();
@@ -383,7 +392,14 @@ void::Game::BuildUI()
 		ImGui::Text("Triangles: %i", 3);
 		ImGui::Text("Vertices: %i", object->GetVertexCount());
 		ImGui::Text("Indices: %i", object->GetIndexCount());
-	} 
+	}
+
+	if (ImGui::CollapsingHeader("Mesh Data"))
+	{
+		ImGui::ColorEdit4("Color Tint", objectColorTint);
+		ImGui::SliderFloat3("Offsets", objectOffset, -1.0f, 1.0f);
+		transform.SetPosition(objectOffset[0], objectOffset[1], objectOffset[2]);
+	}
 
 	if (demoWindowState)
 	{
@@ -395,12 +411,12 @@ void::Game::BuildUI()
 
 }
 
-void::Game::ChangeWindowColor(float r, float g, float b, float a)
+void::Game::ChangeColor(float* _color, float r, float g, float b, float a)
 {
-	color[0] = r;
-	color[1] = g;
-	color[2] = b;
-	color[3] = a;
+	_color[0] = r;
+	_color[1] = g;
+	_color[2] = b;
+	_color[3] = a;
 }
 
 
