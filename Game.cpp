@@ -88,10 +88,13 @@ void Game::Initialize()
 		1, 5, 3
 	};
 
+	meshes = new Mesh[3]
+	{
+		Mesh(triangleVerticies, 3, triangleIndicies, 3),
+		Mesh(squareVerticies, 4, squareIndicies, 6),
+		Mesh(objectVerticies, 6, objectIndicies, 9)
+	};
 
-	triangle = std::make_shared<Mesh>(triangleVerticies, 3, triangleIndicies, 3);
-	square = std::make_shared<Mesh>(squareVerticies, 4, squareIndicies, 6);
-	object = std::make_shared<Mesh>(objectVerticies, 6, objectIndicies, 9);
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -150,6 +153,12 @@ Game::~Game()
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
+	//Deallocate Meshes Array
+	delete[] meshes;
+	meshes = nullptr;
+
+	printf("Happy");
 }
 
 
@@ -306,14 +315,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - These steps are generally repeated for EACH object you draw
 	// - Other Direct3D calls will also be necessary to do more complex things
 	{
-		//DrawTraiangle
-		triangle->Draw();
-
-		//Draw Square
-		square->Draw();
-
-		//Draw Object
-		object->Draw();
+		for (int i = 0; i < 3; i++)
+		{
+			meshes[i].Draw();
+		}
 	}
 
 
@@ -380,22 +385,23 @@ void::Game::BuildUI()
 	{
 		ImGui::Text("Triangle:");
 		ImGui::Text("Triangles: %i", 1);
-		ImGui::Text("Vertices: %i", triangle->GetVertexCount());
-		ImGui::Text("Indices: %i", triangle->GetIndexCount());
+		ImGui::Text("Vertices: %i", meshes[0].GetVertexCount());
+		ImGui::Text("Indices: %i", meshes[0].GetIndexCount());
 		ImGui::Text("\n");
 		ImGui::Text("Quad: \n");
 		ImGui::Text("Triangles: %i", 2);
-		ImGui::Text("Vertices: %i", square->GetVertexCount());
-		ImGui::Text("Indices: %i", square->GetIndexCount());
+		ImGui::Text("Vertices: %i", meshes[1].GetVertexCount());
+		ImGui::Text("Indices: %i", meshes[1].GetIndexCount());
 		ImGui::Text("\n");
 		ImGui::Text("Object: \n");
 		ImGui::Text("Triangles: %i", 3);
-		ImGui::Text("Vertices: %i", object->GetVertexCount());
-		ImGui::Text("Indices: %i", object->GetIndexCount());
+		ImGui::Text("Vertices: %i", meshes[2].GetVertexCount());
+		ImGui::Text("Indices: %i", meshes[2].GetIndexCount());
 	}
 
 	if (ImGui::CollapsingHeader("Mesh Data"))
 	{
+		CopyXMFloatToArray(transform.GetPosition(), objectOffset);
 		ImGui::ColorEdit4("Color Tint", objectColorTint);
 		ImGui::SliderFloat3("Offsets", objectOffset, -1.0f, 1.0f);
 		transform.SetPosition(objectOffset[0], objectOffset[1], objectOffset[2]);
@@ -417,6 +423,13 @@ void::Game::ChangeColor(float* _color, float r, float g, float b, float a)
 	_color[1] = g;
 	_color[2] = b;
 	_color[3] = a;
+}
+
+void::Game::CopyXMFloatToArray(XMFLOAT3 xmFloat, float* floatArray)
+{
+	floatArray[0] = xmFloat.x;
+	floatArray[1] = xmFloat.y;
+	floatArray[2] = xmFloat.z;
 }
 
 

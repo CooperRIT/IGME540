@@ -41,6 +41,7 @@ private:
 	void UpdateImGui(float deltaTime);
 	void BuildUI();
 	void ChangeColor(float* _color, float r, float g, float b, float a);
+	void CopyXMFloatToArray(DirectX::XMFLOAT3 xmFloat, float* floatArray);
 
 	// Shaders and shader-related constructs
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
@@ -59,10 +60,8 @@ private:
 	float objectColorTint[4];
 	float objectOffset[3];
 
-	//Mesh Variables
-	std::shared_ptr<Mesh> triangle;
-	std::shared_ptr<Mesh> square;
-	std::shared_ptr<Mesh> object;
+	//Mesh List
+	Mesh* meshes;
 
 	//constantbuffer
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
