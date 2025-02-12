@@ -47,6 +47,14 @@ void Game::Initialize()
 	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 
+	XMFLOAT4 yellow = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);
+	XMFLOAT4 purple = XMFLOAT4(0.5f, 0.0f, 0.5f, 1.0f);
+
+	XMFLOAT4 orange = XMFLOAT4(1.0f, 0.647f, 0.0f, 1.0f);
+	XMFLOAT4 cyan = XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f);
+
+
+
 	Vertex triangleVerticies[] =
 	{
 		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
@@ -64,12 +72,31 @@ void Game::Initialize()
 
 	Vertex objectVerticies[] =
 	{
-		{XMFLOAT3(.6f, 1.0f, 0.0f), green},// Top Top
-		{XMFLOAT3(.8f, 0.7f, 0.0f), green},//Top Right
-		{XMFLOAT3(.4f, 0.7f, 0.0f), green},//Top left
-		{XMFLOAT3(0.6f, .4f, 0.0f), green},//Bottom leff right
-		{XMFLOAT3(.2f, .4f, 0.0f), green},//Bottom left left
-		{XMFLOAT3(1.0f, .4f, 0.0f), green},//Bottom right right
+		{XMFLOAT3(.6f, 1.0f, 0.0f), green},
+		{XMFLOAT3(.8f, 0.7f, 0.0f), green},
+		{XMFLOAT3(.4f, 0.7f, 0.0f), green},
+		{XMFLOAT3(0.6f, .4f, 0.0f), green},
+		{XMFLOAT3(.2f, .4f, 0.0f), green},
+		{XMFLOAT3(1.0f, .4f, 0.0f), green}
+	};
+
+	Vertex hexagonVerticies[] =
+	{
+		{XMFLOAT3(0.0f, 0.5f, 0.0f), yellow},
+		{XMFLOAT3(0.5f, 0.25f, 0.0f), purple},
+		{XMFLOAT3(0.5f, -0.25f, 0.0f), yellow},
+		{XMFLOAT3(0.0f, -0.5f, 0.0f), purple},
+		{XMFLOAT3(-0.5f, -0.25f, 0.0f), yellow},
+		{XMFLOAT3(-0.5f, 0.25f, 0.0f), purple}
+	};
+
+	Vertex pentagonVerticies[] =
+	{
+		{XMFLOAT3(0.0f, 0.5f, 0.0f), orange},
+		{XMFLOAT3(0.5f, 0.2f, 0.0f), cyan},
+		{XMFLOAT3(0.3f, -0.3f, 0.0f), orange},
+		{XMFLOAT3(-0.3f, -0.3f, 0.0f), cyan},
+		{XMFLOAT3(-0.5f, 0.2f, 0.0f), orange}
 	};
 
 
@@ -88,12 +115,21 @@ void Game::Initialize()
 		1, 5, 3
 	};
 
-	meshes = new Mesh[3]
+	unsigned int hexagonIndicies[] =
 	{
-		Mesh(triangleVerticies, 3, triangleIndicies, 3),
-		Mesh(squareVerticies, 4, squareIndicies, 6),
-		Mesh(objectVerticies, 6, objectIndicies, 9)
+		0, 1, 5,
+		1, 2, 5,
+		2, 3, 5,
+		3, 4, 5
 	};
+
+	unsigned int pentagonIndicies[] =
+	{
+		0, 1, 2,
+		2, 3, 4,
+		4, 0, 2
+	};
+	
 
 
 	// Set initial graphics API state
@@ -136,9 +172,64 @@ void Game::Initialize()
 		Graphics::Context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 	}
 
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(triangleVerticies, 3, triangleIndicies, 3)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(squareVerticies, 4, squareIndicies, 6)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(objectVerticies, 6, objectIndicies, 9)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 9)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10)));
+
+
+	EntityInformation entity1 = 
+	{
+		{gameEntities[0]->GetTransform()->GetPosition().x, gameEntities[0]->GetTransform()->GetPosition().y, gameEntities[0]->GetTransform()->GetPosition().z},  // Position
+		{gameEntities[0]->GetTransform()->GetRotation().x, gameEntities[0]->GetTransform()->GetRotation().y, gameEntities[0]->GetTransform()->GetRotation().z},  // Rotation
+		{gameEntities[0]->GetTransform()->GetScale().x, gameEntities[0]->GetTransform()->GetScale().y, gameEntities[0]->GetTransform()->GetScale().z},  // Scale
+	};
+
+	EntityInformation entity2 = 
+	{
+		{gameEntities[1]->GetTransform()->GetPosition().x, gameEntities[1]->GetTransform()->GetPosition().y, gameEntities[1]->GetTransform()->GetPosition().z},  // Position
+		{gameEntities[1]->GetTransform()->GetRotation().x, gameEntities[1]->GetTransform()->GetRotation().y, gameEntities[1]->GetTransform()->GetRotation().z},  // Rotation
+		{gameEntities[1]->GetTransform()->GetScale().x, gameEntities[1]->GetTransform()->GetScale().y, gameEntities[1]->GetTransform()->GetScale().z},  // Scale
+	};
+
+	EntityInformation entity3 = 
+	{
+		{gameEntities[2]->GetTransform()->GetPosition().x, gameEntities[2]->GetTransform()->GetPosition().y, gameEntities[2]->GetTransform()->GetPosition().z},  // Position
+		{gameEntities[2]->GetTransform()->GetRotation().x, gameEntities[2]->GetTransform()->GetRotation().y, gameEntities[2]->GetTransform()->GetRotation().z},  // Rotation
+		{gameEntities[2]->GetTransform()->GetScale().x, gameEntities[2]->GetTransform()->GetScale().y, gameEntities[2]->GetTransform()->GetScale().z},  // Scale
+	};
+
+	EntityInformation entity4 =
+	{
+		{gameEntities[3]->GetTransform()->GetPosition().x, gameEntities[3]->GetTransform()->GetPosition().y, gameEntities[3]->GetTransform()->GetPosition().z},  // Position
+		{gameEntities[3]->GetTransform()->GetRotation().x, gameEntities[3]->GetTransform()->GetRotation().y, gameEntities[3]->GetTransform()->GetRotation().z},  // Rotation
+		{gameEntities[3]->GetTransform()->GetScale().x, gameEntities[3]->GetTransform()->GetScale().y, gameEntities[3]->GetTransform()->GetScale().z},  // Scale
+	};
+
+	EntityInformation entity5 =
+	{
+		{gameEntities[4]->GetTransform()->GetPosition().x, gameEntities[4]->GetTransform()->GetPosition().y, gameEntities[4]->GetTransform()->GetPosition().z},  // Position
+		{gameEntities[4]->GetTransform()->GetRotation().x, gameEntities[4]->GetTransform()->GetRotation().y, gameEntities[4]->GetTransform()->GetRotation().z},  // Rotation
+		{gameEntities[4]->GetTransform()->GetScale().x, gameEntities[4]->GetTransform()->GetScale().y, gameEntities[4]->GetTransform()->GetScale().z},  // Scale
+	};
+
+	//THERE HAS TO BE A BETTER WAY TO DO THIS
+
+	//I MUST BE DOING SOMETHING WRONG
+
+	// Add entities to vector
+	entityInfo.push_back(entity1);
+	entityInfo.push_back(entity2);
+	entityInfo.push_back(entity3);
+	entityInfo.push_back(entity4);
+	entityInfo.push_back(entity5);
+
+
+
 	//Initialize Window Color and color tint
 	ChangeColor(color, 0.4f, 0.6f, 0.75f, 0.0f);
-	ChangeColor(objectColorTint, 1.0f, 1.0f, 1.0f, 0.0f);
+	ChangeColor(&objectColorTint.x, 1.0f, 1.0f, 1.0f, 0.0f);
 }
 
 
@@ -155,10 +246,6 @@ Game::~Game()
 	ImGui::DestroyContext();
 
 	//Deallocate Meshes Array
-	delete[] meshes;
-	meshes = nullptr;
-
-	printf("Happy");
 }
 
 
@@ -286,42 +373,48 @@ void Game::Draw(float deltaTime, float totalTime)
 	XMStoreFloat4x4(&tr, trMat);*/
 
 	//
-	XMFLOAT4 _color(objectColorTint[0], objectColorTint[1], objectColorTint[2], objectColorTint[3]);
-	//XMFLOAT3 _offset(objectOffset[0], objectOffset[1], objectOffset[2]);
+	//XMFLOAT4 _color(objectColorTint[0], objectColorTint[1], objectColorTint[2], objectColorTint[3]);
+	////XMFLOAT3 _offset(objectOffset[0], objectOffset[1], objectOffset[2]);
 
 
-	//Collect Data Locallu
-	VertexShaderToCopyToGpuToGPU dataToCopy{};
-	dataToCopy.colorTint = _color;
-	dataToCopy.offset = transform.GetWorldMatrix();
+	////Collect Data Locallu
+	//VertexShaderToCopyToGpuToGPU dataToCopy{};
+	//dataToCopy.colorTint = _color;
+	//dataToCopy.offset = transform.GetWorldMatrix();
 
 
-	//First we need to Map the buffer
-	D3D11_MAPPED_SUBRESOURCE mapped{};
-	Graphics::Context->Map(
-		constantBuffer.Get(),
-		0,
-		D3D11_MAP_WRITE_DISCARD,
-		0,
-		&mapped);
+	////First we need to Map the buffer
+	//D3D11_MAPPED_SUBRESOURCE mapped{};
+	//Graphics::Context->Map(
+	//	constantBuffer.Get(),
+	//	0,
+	//	D3D11_MAP_WRITE_DISCARD,
+	//	0,
+	//	&mapped);
 
-	//Copy To GPU using memcpy
-	memcpy(mapped.pData, &dataToCopy, sizeof(VertexShaderToCopyToGpuToGPU));
+	////Copy To GPU using memcpy
+	//memcpy(mapped.pData, &dataToCopy, sizeof(VertexShaderToCopyToGpuToGPU));
 
-	//Unmap when done
-	Graphics::Context->Unmap(constantBuffer.Get(), 0);
+	////Unmap when done
+	//Graphics::Context->Unmap(constantBuffer.Get(), 0);
 
 	// DRAW geometry
 	// - These steps are generally repeated for EACH object you draw
 	// - Other Direct3D calls will also be necessary to do more complex things
 	{
-		for (int i = 0; i < 3; i++)
+		/*for (int i = 0; i < 3; i++)
 		{
 			meshes[i].Draw();
-		}
+		}*/
 	}
 
 
+
+	//triangle->Draw();
+	for (const auto& obj : gameEntities) 
+	{
+		obj->Draw(objectColorTint);
+	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
@@ -375,6 +468,8 @@ void::Game::BuildUI()
 
 		ImGui::ColorEdit4("Background Color", color);
 
+		ImGui::ColorEdit4("ColorTint", &objectColorTint.x);
+
 		if (ImGui::Button("Show Demo Window"))
 		{
 			demoWindowState = !demoWindowState;
@@ -383,29 +478,99 @@ void::Game::BuildUI()
 
 	if (ImGui::CollapsingHeader("Meshes"))
 	{
+
 		ImGui::Text("Triangle:");
 		ImGui::Text("Triangles: %i", 1);
-		ImGui::Text("Vertices: %i", meshes[0].GetVertexCount());
-		ImGui::Text("Indices: %i", meshes[0].GetIndexCount());
+		ImGui::Text("Vertices: %i", gameEntities[0]->GetMesh()->GetVertexCount());
+		ImGui::Text("Indices: %i", gameEntities[0]->GetMesh()->GetIndexCount());
 		ImGui::Text("\n");
-		ImGui::Text("Quad: \n");
+
+		ImGui::Text("Quad:");
 		ImGui::Text("Triangles: %i", 2);
-		ImGui::Text("Vertices: %i", meshes[1].GetVertexCount());
-		ImGui::Text("Indices: %i", meshes[1].GetIndexCount());
+		ImGui::Text("Vertices: %i", gameEntities[1]->GetMesh()->GetVertexCount());
+		ImGui::Text("Indices: %i", gameEntities[1]->GetMesh()->GetIndexCount());
 		ImGui::Text("\n");
-		ImGui::Text("Object: \n");
+
+		ImGui::Text("Object:");
 		ImGui::Text("Triangles: %i", 3);
-		ImGui::Text("Vertices: %i", meshes[2].GetVertexCount());
-		ImGui::Text("Indices: %i", meshes[2].GetIndexCount());
+		ImGui::Text("Vertices: %i", gameEntities[2]->GetMesh()->GetVertexCount());
+		ImGui::Text("Indices: %i", gameEntities[2]->GetMesh()->GetIndexCount());
+		ImGui::Text("\n");
+
+		ImGui::Text("Hexagon:");
+		ImGui::Text("Triangles: %i", 6);
+		ImGui::Text("Vertices: %i", gameEntities[3]->GetMesh()->GetVertexCount());
+		ImGui::Text("Indices: %i", gameEntities[3]->GetMesh()->GetIndexCount());
+		ImGui::Text("\n");
+
+		ImGui::Text("Pentagon:");
+		ImGui::Text("Triangles: %i", 3);
+		ImGui::Text("Vertices: %i", gameEntities[4]->GetMesh()->GetVertexCount());
+		ImGui::Text("Indices: %i", gameEntities[4]->GetMesh()->GetIndexCount());
+		ImGui::Text("\n");
+
+
 	}
 
-	if (ImGui::CollapsingHeader("Mesh Data"))
-	{
-		CopyXMFloatToArray(transform.GetPosition(), objectOffset);
-		ImGui::ColorEdit4("Color Tint", objectColorTint);
-		ImGui::SliderFloat3("Offsets", objectOffset, -1.0f, 1.0f);
-		transform.SetPosition(objectOffset[0], objectOffset[1], objectOffset[2]);
+	if (ImGui::CollapsingHeader("Entities")) {
+
+		if (ImGui::CollapsingHeader("Entity 1")) 
+		{
+			ImGui::SliderFloat3("Position", entityInfo[0].objectPosition, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Rotation", entityInfo[0].objectRotation, -5.0f, 5.0f);
+			ImGui::SliderFloat3("Scale", entityInfo[0].objectScale, 0.0f, 5.0f);
+
+			gameEntities[0]->GetTransform()->SetPosition(entityInfo[0].objectPosition);
+			gameEntities[0]->GetTransform()->SetRotation(entityInfo[0].objectRotation);
+			gameEntities[0]->GetTransform()->SetScale(entityInfo[0].objectScale);
+		}
+
+		if (ImGui::CollapsingHeader("Entity 2")) 
+		{
+			ImGui::SliderFloat3("Position", entityInfo[1].objectPosition, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Rotation", entityInfo[1].objectRotation, -5.0f, 5.0f);
+			ImGui::SliderFloat3("Scale", entityInfo[1].objectScale, 0.0f, 5.0f);
+
+			gameEntities[1]->GetTransform()->SetPosition(entityInfo[1].objectPosition);
+			gameEntities[1]->GetTransform()->SetRotation(entityInfo[1].objectRotation);
+			gameEntities[1]->GetTransform()->SetScale(entityInfo[1].objectScale);
+		}
+
+		if (ImGui::CollapsingHeader("Entity 3")) 
+		{
+			ImGui::SliderFloat3("Position", entityInfo[2].objectPosition, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Rotation", entityInfo[2].objectRotation, -5.0f, 5.0f);
+			ImGui::SliderFloat3("Scale", entityInfo[2].objectScale, 0.0f, 5.0f);
+
+			gameEntities[2]->GetTransform()->SetPosition(entityInfo[2].objectPosition);
+			gameEntities[2]->GetTransform()->SetRotation(entityInfo[2].objectRotation);
+			gameEntities[2]->GetTransform()->SetScale(entityInfo[2].objectScale);
+		}
+
+		if (ImGui::CollapsingHeader("Entity 4"))
+		{
+			ImGui::SliderFloat3("Position", entityInfo[3].objectPosition, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Rotation", entityInfo[3].objectRotation, -5.0f, 5.0f);
+			ImGui::SliderFloat3("Scale", entityInfo[3].objectScale, 0.0f, 5.0f);
+
+			gameEntities[3]->GetTransform()->SetPosition(entityInfo[3].objectPosition);
+			gameEntities[3]->GetTransform()->SetRotation(entityInfo[3].objectRotation);
+			gameEntities[3]->GetTransform()->SetScale(entityInfo[3].objectScale);
+		}
+
+		
+		if (ImGui::CollapsingHeader("Entity 5"))
+		{
+			ImGui::SliderFloat3("Position", entityInfo[4].objectPosition, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Rotation", entityInfo[4].objectRotation, -5.0f, 5.0f);
+			ImGui::SliderFloat3("Scale", entityInfo[4].objectScale, 0.0f, 5.0f);
+
+			gameEntities[4]->GetTransform()->SetPosition(entityInfo[4].objectPosition);
+			gameEntities[4]->GetTransform()->SetRotation(entityInfo[4].objectRotation);
+			gameEntities[4]->GetTransform()->SetScale(entityInfo[4].objectScale);
+		}
 	}
+
 
 	if (demoWindowState)
 	{

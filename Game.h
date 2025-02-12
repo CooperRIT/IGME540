@@ -4,15 +4,24 @@
 #include <memory>
 #include <DirectXMath.h>
 #include "Transform.h"
+#include "GameEntity.h"
 
 #include <d3d11.h>
 #include <wrl/client.h>
+#include <vector>
 
 
 struct VertexShaderToCopyToGpuToGPU
 {
 	DirectX::XMFLOAT4 colorTint;
 	DirectX::XMFLOAT4X4 offset;
+};
+
+struct EntityInformation 
+{
+	float objectPosition[3];  
+	float objectRotation[3];
+	float objectScale[3];
 };
 
 class Game
@@ -55,16 +64,23 @@ private:
 
 	bool demoWindowState = false;
 
-	float color[4];
-
-	float objectColorTint[4];
+	DirectX::XMFLOAT4 objectColorTint;
 	float objectOffset[3];
 
+	float color[4];
+
+	//EntityInfo List
+	std::vector <EntityInformation> entityInfo;
+
 	//Mesh List
-	Mesh* meshes;
+	std::vector<std::shared_ptr<GameEntity>> gameEntities;
 
 	//constantbuffer
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
+	//Game Entities
+	std::shared_ptr<GameEntity> triangle;
 };
+
+
 

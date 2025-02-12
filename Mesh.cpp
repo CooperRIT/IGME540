@@ -8,6 +8,8 @@ Mesh::Mesh(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCo
 	vertexBufferCount = vertexCount;
 	indexBufferCount = indexCount;
 
+	color = XMFLOAT4(0, 0, 0, 0);
+
 	// Create a VERTEX BUFFER
 	{
 		// First, we need to describe the buffer we want Direct3D to make on the GPU
@@ -59,7 +61,6 @@ Mesh::~Mesh()
 {
 
 }
-
 
 void Mesh::Draw()
 {

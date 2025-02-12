@@ -19,11 +19,16 @@ public:
 
 	void Draw();
 	
+	DirectX::XMFLOAT4 XMGetColor();
+	float* PtrGetColor();
+	
 
 private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
+
+	DirectX::XMFLOAT4 color;
 
 	int indexBufferCount;
 	int vertexBufferCount;

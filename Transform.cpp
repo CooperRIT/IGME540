@@ -19,8 +19,16 @@ void Transform::SetPosition(float x, float y, float z)
 void Transform::SetPosition(DirectX::XMFLOAT3 pos)
 {
 	position = pos;
+	dirty = true;
 }
 
+void Transform::SetPosition(float* array)
+{
+	position.x = array[0];
+	position.y = array[1];
+	position.z = array[2];
+	dirty = true;
+}
 
 
 void Transform::SetRotation(float ptich, float yaw, float roll)
@@ -32,6 +40,14 @@ void Transform::SetRotation(float ptich, float yaw, float roll)
 
 }
 
+void Transform::SetRotation(float* array)
+{
+	pitchYawRoll.x = array[0];
+	pitchYawRoll.y = array[1];
+	pitchYawRoll.z = array[2];
+	dirty = true;
+}
+
 void Transform::SetScale(float x, float y, float z)
 {
 	scale.x = x;
@@ -39,6 +55,14 @@ void Transform::SetScale(float x, float y, float z)
 	scale.z = z;
 	dirty = true;
 
+}
+
+void Transform::SetScale(float* array)
+{
+	scale.x = array[0];
+	scale.y = array[1];
+	scale.z = array[2];
+	dirty = true;
 }
 
 void Transform::MoveAbsolute(float x, float y, float z)

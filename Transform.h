@@ -11,8 +11,11 @@ public:
 	//Setters
 	void SetPosition(float x, float y, float z);
 	void SetPosition(DirectX::XMFLOAT3 pos);
+	void SetPosition(float* array);
 	void SetRotation(float ptich, float yaw, float roll);
+	void SetRotation(float* array);
 	void SetScale(float x, float y, float z);
+	void SetScale(float* array);
 
 	//Transformers
 	void MoveAbsolute(float x, float y, float z);
@@ -26,7 +29,6 @@ public:
 	DirectX::XMFLOAT3 GetScale();
 
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
-
 
 
 private:
