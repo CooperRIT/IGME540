@@ -127,6 +127,10 @@ DirectX::XMFLOAT3 Transform::GetUp()
 {
 	return up;
 }
+DirectX::XMFLOAT3 Transform::GetForward()
+{
+	return forward;
+}
 
 DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 {

@@ -34,6 +34,8 @@ public:
 	DirectX::XMFLOAT3 GetScale();
 
 	DirectX::XMFLOAT3 GetUp();
+	DirectX::XMFLOAT3 GetForward();
+
 
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
 

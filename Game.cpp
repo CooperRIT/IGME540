@@ -334,6 +334,8 @@ void Game::Update(float deltaTime, float totalTime)
 		gameEntities[i]->GetTransform()->SetPosition(sinf(totalTime), 0, 0);
 		CopyInfoToStruct(i);
 	}
+
+	camera->Update(deltaTime);
 }
 
 

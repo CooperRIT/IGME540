@@ -9,6 +9,8 @@ Camera::Camera(DirectX::XMFLOAT3 pos, float moveSpeed, float lookSpeed, float fo
 
 	transform = std::make_shared<Transform>();
 
+	transform->SetPosition(pos);
+
 	UpdateViewMatrix();
 
 	UpdateProjectionMatrix(aspectRatio);
@@ -20,13 +22,15 @@ Camera::~Camera()
 
 void Camera::Update(float deltaTime)
 {
+	//Input code
 
+	UpdateViewMatrix();
 }
 
 void Camera::UpdateViewMatrix()
 {
 	XMFLOAT3 pos = transform->GetPosition();
-	XMFLOAT3 forward = transform->GetUp();
+	XMFLOAT3 forward = transform->GetForward();
 	XMFLOAT3 worldUp = XMFLOAT3(0, 1, 0);
 
 	XMMATRIX viewM = XMMatrixLookToLH(

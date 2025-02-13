@@ -52,7 +52,7 @@ VertexToPixel main( VertexShaderInput input )
 	// Set up output struct
 	VertexToPixel output;
 
-	matrix wvp = mul(mul(projection, view), offset);
+	matrix wvp = mul(projection, mul(view, offset));
 
 	// Here we're essentially passing the input position directly through to the next
 	// stage (rasterizer), though it needs to be a 4-component vector now.  
