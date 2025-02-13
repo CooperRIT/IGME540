@@ -5,6 +5,7 @@
 #include <DirectXMath.h>
 #include "Transform.h"
 #include "GameEntity.h"
+#include "Camera.h"
 
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -14,7 +15,10 @@
 struct VertexShaderToCopyToGpuToGPU
 {
 	DirectX::XMFLOAT4 colorTint;
-	DirectX::XMFLOAT4X4 offset;
+	DirectX::XMFLOAT4X4 worldMatrix;
+	DirectX::XMFLOAT4X4 viewMatrix;
+	DirectX::XMFLOAT4X4 projectionMatrix;
+
 };
 
 //This is for ImGUI
@@ -86,6 +90,9 @@ private:
 
 	//Game Entities
 	std::shared_ptr<GameEntity> triangle;
+
+	//camera
+	std::shared_ptr<Camera> camera;
 };
 
 

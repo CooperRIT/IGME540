@@ -175,7 +175,7 @@ void Game::Initialize()
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(triangleVerticies, 3, triangleIndicies, 3)));
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(squareVerticies, 4, squareIndicies, 6)));
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(objectVerticies, 6, objectIndicies, 9)));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 9)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 12)));
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10)));
 
 	/*for (int i = 0; i < 5; i++)
@@ -202,6 +202,15 @@ void Game::Initialize()
 			}
 		);
 	}
+
+	camera = std::make_shared<Camera>
+		(
+			XMFLOAT3(0, 0, -5),
+			5.0f,
+			.05f,
+			XM_PIDIV4,
+			Window::AspectRatio()
+		);
 
 
 	//Initialize Window Color and color tint
@@ -345,7 +354,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//triangle->Draw();
 	for (const auto& obj : gameEntities) 
 	{
-		obj->Draw(objectColorTint);
+		obj->Draw(objectColorTint, camera);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles

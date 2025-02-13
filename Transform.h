@@ -21,7 +21,10 @@ public:
 
 	//Transformers
 	void MoveAbsolute(float x, float y, float z);
-	//void MoveRelative(float x, float y, float z);
+	void MoveAbsolute(DirectX::XMFLOAT3 offset);
+
+	void MoveRelative(float x, float y, float z);
+
 	void Rotate(float ptich, float yaw, float roll);
 	void Scale(float x, float y, float z);
 
@@ -29,6 +32,8 @@ public:
 	DirectX::XMFLOAT3 GetPosition();
 	DirectX::XMFLOAT3 GetRotation();
 	DirectX::XMFLOAT3 GetScale();
+
+	DirectX::XMFLOAT3 GetUp();
 
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
 
@@ -41,6 +46,10 @@ private:
 	DirectX::XMFLOAT3 scale;
 	// Quaternion Version For Later DirectX::XMFLOAT4 rotation;
 
+	//localOrentation
+	DirectX::XMFLOAT3 up;
+	DirectX::XMFLOAT3 right;
+	DirectX::XMFLOAT3 forward;
 
 	//Matrix
 	bool dirty;

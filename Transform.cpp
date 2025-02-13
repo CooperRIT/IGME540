@@ -6,6 +6,10 @@ Transform::Transform() : position(0, 0, 0), pitchYawRoll(0, 0, 0), scale(1, 1, 1
 {
 	XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
 
+	up = XMFLOAT3(0, 1, 0);
+	right = XMFLOAT3(1, 0, 0);
+	forward = XMFLOAT3(0, 0, 1);
+
 }
 
 void Transform::SetPosition(float x, float y, float z)
@@ -24,10 +28,7 @@ void Transform::SetPosition(DirectX::XMFLOAT3 pos)
 
 void Transform::SetPosition(float* array)
 {
-	position.x = array[0];
-	position.y = array[1];
-	position.z = array[2];
-	dirty = true;
+	SetPosition(array[0], array[1], array[2]);
 }
 
 
@@ -47,10 +48,7 @@ void Transform::SetRotation(DirectX::XMFLOAT3 rotation)
 
 void Transform::SetRotation(float* array)
 {
-	pitchYawRoll.x = array[0];
-	pitchYawRoll.y = array[1];
-	pitchYawRoll.z = array[2];
-	dirty = true;
+	SetRotation(array[0], array[1], array[2]);
 }
 
 void Transform::SetScale(float x, float y, float z)
@@ -69,15 +67,31 @@ void Transform::SetScale(DirectX::XMFLOAT3 _scale)
 
 void Transform::SetScale(float* array)
 {
-	scale.x = array[0];
-	scale.y = array[1];
-	scale.z = array[2];
-	dirty = true;
+	SetScale(array[0], array[1], array[2]);
 }
 
 void Transform::MoveAbsolute(float x, float y, float z)
 {
 	XMStoreFloat3(&position, XMLoadFloat3(&position) + XMVectorSet(x, y, z, 0));
+}
+
+void Transform::MoveRelative(float x, float y, float z)
+{
+	//Move along our "local" axes
+	
+	// Step 1: Create a vector
+	XMVECTOR movment = XMVectorSet(x, y, z, 0);
+
+	//Createa a quaterninon for rotation
+
+	XMVECTOR rotQuat = XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&pitchYawRoll));
+
+	//Perform the rotation of our desired movement
+	XMVECTOR dir = XMVector3Rotate(movment, rotQuat);
+
+	//Step 4: Add this rotated direction to our position
+	XMStoreFloat3(&position, XMLoadFloat3(&position) + dir);
+	dirty = true;
 }
 
 void Transform::Rotate(float ptich, float yaw, float roll)
@@ -107,6 +121,11 @@ DirectX::XMFLOAT3 Transform::GetRotation()
 DirectX::XMFLOAT3 Transform::GetScale()
 {
 	return scale;
+}
+
+DirectX::XMFLOAT3 Transform::GetUp()
+{
+	return up;
 }
 
 DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()

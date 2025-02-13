@@ -16,8 +16,6 @@ GameEntity::GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer, Me
 	//Create Transform
 	transform = std::make_shared<Transform>();
 
-	printf("Hello");
-
 }
 
 GameEntity::~GameEntity()
@@ -35,12 +33,14 @@ std::shared_ptr<Mesh> GameEntity::GetMesh()
 	return mesh;
 }
 
-void GameEntity::Draw(DirectX::XMFLOAT4 colorTint)
+void GameEntity::Draw(DirectX::XMFLOAT4 colorTint, std::shared_ptr<Camera> camera)
 {
 	//Constant Buffer Mapping
 	VertexShaderToCopyToGpuToGPU dataToCopy{};
 	dataToCopy.colorTint = colorTint;
-	dataToCopy.offset = transform->GetWorldMatrix();
+	dataToCopy.worldMatrix = transform->GetWorldMatrix();
+	dataToCopy.viewMatrix = camera->GetView();
+	dataToCopy.projectionMatrix = camera->GetProjection();
 
 
 	//First we need to Map the buffer
