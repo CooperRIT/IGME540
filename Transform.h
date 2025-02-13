@@ -13,8 +13,10 @@ public:
 	void SetPosition(DirectX::XMFLOAT3 pos);
 	void SetPosition(float* array);
 	void SetRotation(float ptich, float yaw, float roll);
+	void SetRotation(DirectX::XMFLOAT3 rotation);
 	void SetRotation(float* array);
 	void SetScale(float x, float y, float z);
+	void SetScale(DirectX::XMFLOAT3 _scale);
 	void SetScale(float* array);
 
 	//Transformers

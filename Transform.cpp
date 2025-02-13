@@ -40,6 +40,11 @@ void Transform::SetRotation(float ptich, float yaw, float roll)
 
 }
 
+void Transform::SetRotation(DirectX::XMFLOAT3 rotation)
+{
+	pitchYawRoll = rotation;
+}
+
 void Transform::SetRotation(float* array)
 {
 	pitchYawRoll.x = array[0];
@@ -55,6 +60,11 @@ void Transform::SetScale(float x, float y, float z)
 	scale.z = z;
 	dirty = true;
 
+}
+
+void Transform::SetScale(DirectX::XMFLOAT3 _scale)
+{
+	scale = _scale;
 }
 
 void Transform::SetScale(float* array)

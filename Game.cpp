@@ -178,7 +178,7 @@ void Game::Initialize()
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 9)));
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10)));
 
-	for (int i = 0; i < 5; i++)
+	/*for (int i = 0; i < 5; i++)
 	{
 		entityInfo.push_back
 		(
@@ -187,6 +187,18 @@ void Game::Initialize()
 				{gameEntities[i]->GetTransform()->GetPosition().x, gameEntities[i]->GetTransform()->GetPosition().y, gameEntities[i]->GetTransform()->GetPosition().z},
 				{gameEntities[i]->GetTransform()->GetRotation().x, gameEntities[i]->GetTransform()->GetRotation().y, gameEntities[i]->GetTransform()->GetRotation().z},
 				{gameEntities[i]->GetTransform()->GetScale().x, gameEntities[i]->GetTransform()->GetScale().y, gameEntities[i]->GetTransform()->GetScale().z},
+			}
+		);
+	}*/
+
+
+	for (int i = 0; i < 5; i++)
+	{
+		entityInfo.push_back
+		(
+			EntityInformation
+			{
+				gameEntities[i]->GetTransform()->GetPosition(), gameEntities[i]->GetTransform()->GetRotation(), gameEntities[i]->GetTransform()->GetScale()
 			}
 		);
 	}
@@ -428,68 +440,28 @@ void::Game::BuildUI()
 		ImGui::Text("Vertices: %i", gameEntities[4]->GetMesh()->GetVertexCount());
 		ImGui::Text("Indices: %i", gameEntities[4]->GetMesh()->GetIndexCount());
 		ImGui::Text("\n");
+	}
 
+	if (ImGui::CollapsingHeader("Entities")) 
+	{
+
+		for (int i = 0; i < 5; i++) 
+		{
+			if (ImGui::CollapsingHeader(("Entity " + std::to_string(i + 1)).c_str())) 
+			{
+				ImGui::SliderFloat3("Position", &entityInfo[i].objectPosition.x, -1.0f, 1.0f);
+				ImGui::SliderFloat3("Rotation", &entityInfo[i].objectRotation.x, -5.0f, 5.0f);
+				ImGui::SliderFloat3("Scale", &entityInfo[i].objectScale.x, 0.0f, 5.0f);
+
+				gameEntities[i]->GetTransform()->SetPosition(entityInfo[i].objectPosition);
+				gameEntities[i]->GetTransform()->SetRotation(entityInfo[i].objectRotation);
+				gameEntities[i]->GetTransform()->SetScale(entityInfo[i].objectScale);
+			}
+		}
 
 	}
 
-	if (ImGui::CollapsingHeader("Entities")) {
 
-		if (ImGui::CollapsingHeader("Entity 1")) 
-		{
-			ImGui::SliderFloat3("Position", entityInfo[0].objectPosition, -1.0f, 1.0f);
-			ImGui::SliderFloat3("Rotation", entityInfo[0].objectRotation, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Scale", entityInfo[0].objectScale, 0.0f, 5.0f);
-
-			gameEntities[0]->GetTransform()->SetPosition(entityInfo[0].objectPosition);
-			gameEntities[0]->GetTransform()->SetRotation(entityInfo[0].objectRotation);
-			gameEntities[0]->GetTransform()->SetScale(entityInfo[0].objectScale);
-		}
-
-		if (ImGui::CollapsingHeader("Entity 2")) 
-		{
-			ImGui::SliderFloat3("Position", entityInfo[1].objectPosition, -1.0f, 1.0f);
-			ImGui::SliderFloat3("Rotation", entityInfo[1].objectRotation, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Scale", entityInfo[1].objectScale, 0.0f, 5.0f);
-
-			gameEntities[1]->GetTransform()->SetPosition(entityInfo[1].objectPosition);
-			gameEntities[1]->GetTransform()->SetRotation(entityInfo[1].objectRotation);
-			gameEntities[1]->GetTransform()->SetScale(entityInfo[1].objectScale);
-		}
-
-		if (ImGui::CollapsingHeader("Entity 3")) 
-		{
-			ImGui::SliderFloat3("Position", entityInfo[2].objectPosition, -1.0f, 1.0f);
-			ImGui::SliderFloat3("Rotation", entityInfo[2].objectRotation, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Scale", entityInfo[2].objectScale, 0.0f, 5.0f);
-
-			gameEntities[2]->GetTransform()->SetPosition(entityInfo[2].objectPosition);
-			gameEntities[2]->GetTransform()->SetRotation(entityInfo[2].objectRotation);
-			gameEntities[2]->GetTransform()->SetScale(entityInfo[2].objectScale);
-		}
-
-		if (ImGui::CollapsingHeader("Entity 4"))
-		{
-			ImGui::SliderFloat3("Position", entityInfo[3].objectPosition, -1.0f, 1.0f);
-			ImGui::SliderFloat3("Rotation", entityInfo[3].objectRotation, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Scale", entityInfo[3].objectScale, 0.0f, 5.0f);
-
-			gameEntities[3]->GetTransform()->SetPosition(entityInfo[3].objectPosition);
-			gameEntities[3]->GetTransform()->SetRotation(entityInfo[3].objectRotation);
-			gameEntities[3]->GetTransform()->SetScale(entityInfo[3].objectScale);
-		}
-
-		
-		if (ImGui::CollapsingHeader("Entity 5"))
-		{
-			ImGui::SliderFloat3("Position", entityInfo[4].objectPosition, -1.0f, 1.0f);
-			ImGui::SliderFloat3("Rotation", entityInfo[4].objectRotation, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Scale", entityInfo[4].objectScale, 0.0f, 5.0f);
-
-			gameEntities[4]->GetTransform()->SetPosition(entityInfo[4].objectPosition);
-			gameEntities[4]->GetTransform()->SetRotation(entityInfo[4].objectRotation);
-			gameEntities[4]->GetTransform()->SetScale(entityInfo[4].objectScale);
-		}
-	}
 
 
 	if (demoWindowState)
@@ -519,18 +491,12 @@ void::Game::CopyXMFloatToArray(XMFLOAT3 xmFloat, float* floatArray)
 
 void Game::CopyInfoToStruct(int index)
 {
-	entityInfo[index].objectPosition[0] = gameEntities[index]->GetTransform()->GetPosition().x;
-	entityInfo[index].objectPosition[1] = gameEntities[index]->GetTransform()->GetPosition().y;
-	entityInfo[index].objectPosition[2] = gameEntities[index]->GetTransform()->GetPosition().z;
+	entityInfo[index].objectPosition = gameEntities[index]->GetTransform()->GetPosition();
 
+	entityInfo[index].objectRotation = gameEntities[index]->GetTransform()->GetRotation();
 
-	entityInfo[index].objectRotation[0] = gameEntities[index]->GetTransform()->GetRotation().x;
-	entityInfo[index].objectPosition[1] = gameEntities[index]->GetTransform()->GetRotation().y;
-	entityInfo[index].objectPosition[2] = gameEntities[index]->GetTransform()->GetRotation().z;
+	entityInfo[index].objectScale = gameEntities[index]->GetTransform()->GetScale();
 
-	entityInfo[index].objectScale[0] = gameEntities[index]->GetTransform()->GetScale().x;
-	entityInfo[index].objectScale[1] = gameEntities[index]->GetTransform()->GetScale().y;
-	entityInfo[index].objectScale[2] = gameEntities[index]->GetTransform()->GetScale().z;
 }
 
 

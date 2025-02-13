@@ -20,9 +20,13 @@ struct VertexShaderToCopyToGpuToGPU
 //This is for ImGUI
 struct EntityInformation 
 {
-	float objectPosition[3];  
+	/*float objectPosition[3];  
 	float objectRotation[3];
-	float objectScale[3];
+	float objectScale[3];*/
+
+	DirectX::XMFLOAT3 objectPosition;
+	DirectX::XMFLOAT3 objectRotation;
+	DirectX::XMFLOAT3 objectScale;
 };
 
 class Game
