@@ -17,6 +17,7 @@ struct VertexShaderToCopyToGpuToGPU
 	DirectX::XMFLOAT4X4 offset;
 };
 
+//This is for ImGUI
 struct EntityInformation 
 {
 	float objectPosition[3];  
@@ -51,6 +52,7 @@ private:
 	void BuildUI();
 	void ChangeColor(float* _color, float r, float g, float b, float a);
 	void CopyXMFloatToArray(DirectX::XMFLOAT3 xmFloat, float* floatArray);
+	void CopyInfoToStruct(int index);
 
 	// Shaders and shader-related constructs
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;

@@ -178,53 +178,18 @@ void Game::Initialize()
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 9)));
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10)));
 
-
-	EntityInformation entity1 = 
+	for (int i = 0; i < 5; i++)
 	{
-		{gameEntities[0]->GetTransform()->GetPosition().x, gameEntities[0]->GetTransform()->GetPosition().y, gameEntities[0]->GetTransform()->GetPosition().z},  // Position
-		{gameEntities[0]->GetTransform()->GetRotation().x, gameEntities[0]->GetTransform()->GetRotation().y, gameEntities[0]->GetTransform()->GetRotation().z},  // Rotation
-		{gameEntities[0]->GetTransform()->GetScale().x, gameEntities[0]->GetTransform()->GetScale().y, gameEntities[0]->GetTransform()->GetScale().z},  // Scale
-	};
-
-	EntityInformation entity2 = 
-	{
-		{gameEntities[1]->GetTransform()->GetPosition().x, gameEntities[1]->GetTransform()->GetPosition().y, gameEntities[1]->GetTransform()->GetPosition().z},  // Position
-		{gameEntities[1]->GetTransform()->GetRotation().x, gameEntities[1]->GetTransform()->GetRotation().y, gameEntities[1]->GetTransform()->GetRotation().z},  // Rotation
-		{gameEntities[1]->GetTransform()->GetScale().x, gameEntities[1]->GetTransform()->GetScale().y, gameEntities[1]->GetTransform()->GetScale().z},  // Scale
-	};
-
-	EntityInformation entity3 = 
-	{
-		{gameEntities[2]->GetTransform()->GetPosition().x, gameEntities[2]->GetTransform()->GetPosition().y, gameEntities[2]->GetTransform()->GetPosition().z},  // Position
-		{gameEntities[2]->GetTransform()->GetRotation().x, gameEntities[2]->GetTransform()->GetRotation().y, gameEntities[2]->GetTransform()->GetRotation().z},  // Rotation
-		{gameEntities[2]->GetTransform()->GetScale().x, gameEntities[2]->GetTransform()->GetScale().y, gameEntities[2]->GetTransform()->GetScale().z},  // Scale
-	};
-
-	EntityInformation entity4 =
-	{
-		{gameEntities[3]->GetTransform()->GetPosition().x, gameEntities[3]->GetTransform()->GetPosition().y, gameEntities[3]->GetTransform()->GetPosition().z},  // Position
-		{gameEntities[3]->GetTransform()->GetRotation().x, gameEntities[3]->GetTransform()->GetRotation().y, gameEntities[3]->GetTransform()->GetRotation().z},  // Rotation
-		{gameEntities[3]->GetTransform()->GetScale().x, gameEntities[3]->GetTransform()->GetScale().y, gameEntities[3]->GetTransform()->GetScale().z},  // Scale
-	};
-
-	EntityInformation entity5 =
-	{
-		{gameEntities[4]->GetTransform()->GetPosition().x, gameEntities[4]->GetTransform()->GetPosition().y, gameEntities[4]->GetTransform()->GetPosition().z},  // Position
-		{gameEntities[4]->GetTransform()->GetRotation().x, gameEntities[4]->GetTransform()->GetRotation().y, gameEntities[4]->GetTransform()->GetRotation().z},  // Rotation
-		{gameEntities[4]->GetTransform()->GetScale().x, gameEntities[4]->GetTransform()->GetScale().y, gameEntities[4]->GetTransform()->GetScale().z},  // Scale
-	};
-
-	//THERE HAS TO BE A BETTER WAY TO DO THIS
-
-	//I MUST BE DOING SOMETHING WRONG
-
-	// Add entities to vector
-	entityInfo.push_back(entity1);
-	entityInfo.push_back(entity2);
-	entityInfo.push_back(entity3);
-	entityInfo.push_back(entity4);
-	entityInfo.push_back(entity5);
-
+		entityInfo.push_back
+		(
+			EntityInformation
+			{
+				{gameEntities[i]->GetTransform()->GetPosition().x, gameEntities[i]->GetTransform()->GetPosition().y, gameEntities[i]->GetTransform()->GetPosition().z},
+				{gameEntities[i]->GetTransform()->GetRotation().x, gameEntities[i]->GetTransform()->GetRotation().y, gameEntities[i]->GetTransform()->GetRotation().z},
+				{gameEntities[i]->GetTransform()->GetScale().x, gameEntities[i]->GetTransform()->GetScale().y, gameEntities[i]->GetTransform()->GetScale().z},
+			}
+		);
+	}
 
 
 	//Initialize Window Color and color tint
@@ -342,7 +307,12 @@ void Game::Update(float deltaTime, float totalTime)
 	if (Input::KeyDown(VK_ESCAPE))
 		Window::Quit();
 
-	//transform.SetPosition(sin(totalTime), 0, 0);
+	 //Move them on the X
+	for (int i = 0; i < 5; i++)
+	{
+		gameEntities[i]->GetTransform()->SetPosition(sinf(totalTime), 0, 0);
+		CopyInfoToStruct(i);
+	}
 }
 
 
@@ -359,56 +329,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	color);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
-
-	//Send data to the GPU via the constant buffer
-
-	//Rotate around Z based on time
-	/*XMMATRIX trMat = XMMatrixTranslation(sin(totalTime), 0, 0);
-	XMMATRIX rotZMat = XMMatrixRotationZ(totalTime);*/
-
-
-	/*XMFLOAT4X4 tr;
-	XMFLOAT4X4 rotZ;
-	XMStoreFloat4x4(&rotZ, rotZMat);
-	XMStoreFloat4x4(&tr, trMat);*/
-
-	//
-	//XMFLOAT4 _color(objectColorTint[0], objectColorTint[1], objectColorTint[2], objectColorTint[3]);
-	////XMFLOAT3 _offset(objectOffset[0], objectOffset[1], objectOffset[2]);
-
-
-	////Collect Data Locallu
-	//VertexShaderToCopyToGpuToGPU dataToCopy{};
-	//dataToCopy.colorTint = _color;
-	//dataToCopy.offset = transform.GetWorldMatrix();
-
-
-	////First we need to Map the buffer
-	//D3D11_MAPPED_SUBRESOURCE mapped{};
-	//Graphics::Context->Map(
-	//	constantBuffer.Get(),
-	//	0,
-	//	D3D11_MAP_WRITE_DISCARD,
-	//	0,
-	//	&mapped);
-
-	////Copy To GPU using memcpy
-	//memcpy(mapped.pData, &dataToCopy, sizeof(VertexShaderToCopyToGpuToGPU));
-
-	////Unmap when done
-	//Graphics::Context->Unmap(constantBuffer.Get(), 0);
-
-	// DRAW geometry
-	// - These steps are generally repeated for EACH object you draw
-	// - Other Direct3D calls will also be necessary to do more complex things
-	{
-		/*for (int i = 0; i < 3; i++)
-		{
-			meshes[i].Draw();
-		}*/
-	}
-
-
 
 	//triangle->Draw();
 	for (const auto& obj : gameEntities) 
@@ -596,6 +516,24 @@ void::Game::CopyXMFloatToArray(XMFLOAT3 xmFloat, float* floatArray)
 	floatArray[1] = xmFloat.y;
 	floatArray[2] = xmFloat.z;
 }
+
+void Game::CopyInfoToStruct(int index)
+{
+	entityInfo[index].objectPosition[0] = gameEntities[index]->GetTransform()->GetPosition().x;
+	entityInfo[index].objectPosition[1] = gameEntities[index]->GetTransform()->GetPosition().y;
+	entityInfo[index].objectPosition[2] = gameEntities[index]->GetTransform()->GetPosition().z;
+
+
+	entityInfo[index].objectRotation[0] = gameEntities[index]->GetTransform()->GetRotation().x;
+	entityInfo[index].objectPosition[1] = gameEntities[index]->GetTransform()->GetRotation().y;
+	entityInfo[index].objectPosition[2] = gameEntities[index]->GetTransform()->GetRotation().z;
+
+	entityInfo[index].objectScale[0] = gameEntities[index]->GetTransform()->GetScale().x;
+	entityInfo[index].objectScale[1] = gameEntities[index]->GetTransform()->GetScale().y;
+	entityInfo[index].objectScale[2] = gameEntities[index]->GetTransform()->GetScale().z;
+}
+
+
 
 
 
