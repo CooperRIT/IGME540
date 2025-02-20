@@ -178,40 +178,34 @@ void Game::Initialize()
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 12)));
 	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10)));
 
-	/*for (int i = 0; i < 5; i++)
-	{
-		entityInfo.push_back
-		(
-			EntityInformation
-			{
-				{gameEntities[i]->GetTransform()->GetPosition().x, gameEntities[i]->GetTransform()->GetPosition().y, gameEntities[i]->GetTransform()->GetPosition().z},
-				{gameEntities[i]->GetTransform()->GetRotation().x, gameEntities[i]->GetTransform()->GetRotation().y, gameEntities[i]->GetTransform()->GetRotation().z},
-				{gameEntities[i]->GetTransform()->GetScale().x, gameEntities[i]->GetTransform()->GetScale().y, gameEntities[i]->GetTransform()->GetScale().z},
-			}
-		);
-	}*/
 
 
-	for (int i = 0; i < 5; i++)
-	{
-		entityInfo.push_back
-		(
-			EntityInformation
-			{
-				gameEntities[i]->GetTransform()->GetPosition(), gameEntities[i]->GetTransform()->GetRotation(), gameEntities[i]->GetTransform()->GetScale()
-			}
-		);
-	}
 
-	camera = std::make_shared<Camera>
+
+
+	cameraList.push_back(
+		std::make_shared<Camera>
 		(
 			XMFLOAT3(0, 0, -5),
 			5.0f,
-			.05f,
+			2.0f,
 			XM_PIDIV4,
 			Window::AspectRatio()
-		);
+			)
+	);
+	
+	cameraList.push_back
+	(
+		std::make_shared<Camera>
+		(
+			XMFLOAT3(0, 0, -1),
+			10.0f,
+			1.0f,
+			XM_PIDIV4/2,
+			Window::AspectRatio())
+	);
 
+	activeCamera = cameraList[0];
 
 	//Initialize Window Color and color tint
 	ChangeColor(color, 0.4f, 0.6f, 0.75f, 0.0f);
@@ -312,6 +306,14 @@ void Game::LoadShaders()
 // --------------------------------------------------------
 void Game::OnResize()
 {
+	if (activeCamera == nullptr)
+	{
+		return;
+	}
+	for (const auto& obj : cameraList)
+	{
+		obj->UpdateProjectionMatrix(Window::AspectRatio());
+	}
 }
 
 
@@ -329,13 +331,13 @@ void Game::Update(float deltaTime, float totalTime)
 		Window::Quit();
 
 	 //Move them on the X
-	for (int i = 0; i < 5; i++)
+	/*for (int i = 0; i < 5; i++)
 	{
 		gameEntities[i]->GetTransform()->SetPosition(sinf(totalTime), 0, 0);
 		CopyInfoToStruct(i);
-	}
+	}*/
 
-	camera->Update(deltaTime);
+	activeCamera->Update(deltaTime);
 }
 
 
@@ -356,7 +358,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//triangle->Draw();
 	for (const auto& obj : gameEntities) 
 	{
-		obj->Draw(objectColorTint, camera);
+		obj->Draw(objectColorTint, activeCamera);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
@@ -460,16 +462,33 @@ void::Game::BuildUI()
 		{
 			if (ImGui::CollapsingHeader(("Entity " + std::to_string(i + 1)).c_str())) 
 			{
-				ImGui::SliderFloat3("Position", &entityInfo[i].objectPosition.x, -1.0f, 1.0f);
-				ImGui::SliderFloat3("Rotation", &entityInfo[i].objectRotation.x, -5.0f, 5.0f);
-				ImGui::SliderFloat3("Scale", &entityInfo[i].objectScale.x, 0.0f, 5.0f);
+				//Local Variables
+				XMFLOAT3 pos = gameEntities[i]->GetTransform()->GetPosition();
+				XMFLOAT3 rotation = gameEntities[i]->GetTransform()->GetRotation();
+				XMFLOAT3 scale = gameEntities[i]->GetTransform()->GetScale();
 
-				gameEntities[i]->GetTransform()->SetPosition(entityInfo[i].objectPosition);
-				gameEntities[i]->GetTransform()->SetRotation(entityInfo[i].objectRotation);
-				gameEntities[i]->GetTransform()->SetScale(entityInfo[i].objectScale);
+
+				ImGui::SliderFloat3("Position", &pos.x, -1.0f, 1.0f);
+				ImGui::SliderFloat3("Rotation", &rotation.x, -5.0f, 5.0f);
+				ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 5.0f);
+
+				gameEntities[i]->GetTransform()->SetPosition(pos);
+				gameEntities[i]->GetTransform()->SetRotation(rotation);
+				gameEntities[i]->GetTransform()->SetScale(scale);
 			}
 		}
 
+	}
+
+	if (ImGui::CollapsingHeader("Camera"))
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			if (ImGui::Button(("Camera " + std::to_string(i + 1)).c_str()))
+			{
+				activeCamera = cameraList[i];
+			}
+		}
 	}
 
 
@@ -499,17 +518,6 @@ void::Game::CopyXMFloatToArray(XMFLOAT3 xmFloat, float* floatArray)
 	floatArray[1] = xmFloat.y;
 	floatArray[2] = xmFloat.z;
 }
-
-void Game::CopyInfoToStruct(int index)
-{
-	entityInfo[index].objectPosition = gameEntities[index]->GetTransform()->GetPosition();
-
-	entityInfo[index].objectRotation = gameEntities[index]->GetTransform()->GetRotation();
-
-	entityInfo[index].objectScale = gameEntities[index]->GetTransform()->GetScale();
-
-}
-
 
 
 

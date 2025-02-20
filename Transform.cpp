@@ -38,7 +38,7 @@ void Transform::SetRotation(float ptich, float yaw, float roll)
 	pitchYawRoll.y = yaw;
 	pitchYawRoll.z = roll;
 	dirty = true;
-
+	UpdateVectors();
 }
 
 void Transform::SetRotation(DirectX::XMFLOAT3 rotation)
@@ -92,6 +92,7 @@ void Transform::MoveRelative(float x, float y, float z)
 	//Step 4: Add this rotated direction to our position
 	XMStoreFloat3(&position, XMLoadFloat3(&position) + dir);
 	dirty = true;
+	UpdateVectors();
 }
 
 void Transform::Rotate(float ptich, float yaw, float roll)
@@ -99,6 +100,8 @@ void Transform::Rotate(float ptich, float yaw, float roll)
 	pitchYawRoll.x += ptich;
 	pitchYawRoll.y += yaw;
 	pitchYawRoll.z += roll;
+
+	UpdateVectors();
 }
 
 void Transform::Scale(float x, float y, float z)
@@ -158,5 +161,23 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 
 	dirty = false;
 
+	UpdateVectors();
+
 	return worldMatrix;
+}
+
+void Transform::UpdateVectors()
+{
+	// Create a rotation matrix from the pitchYawRoll angles
+	XMMATRIX rotMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&pitchYawRoll));
+
+	// Transform the initial forward, up, and right vectors using the rotation matrix
+	XMStoreFloat3(&forward, XMVector3TransformNormal(XMVectorSet(0, 0, 1, 0), rotMatrix));
+	XMStoreFloat3(&up, XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMatrix));
+	XMStoreFloat3(&right, XMVector3TransformNormal(XMVectorSet(1, 0, 0, 0), rotMatrix));
+
+	// Normalize the vectors to ensure they are unit vectors
+	XMStoreFloat3(&forward, XMVector3Normalize(XMLoadFloat3(&forward)));
+	XMStoreFloat3(&up, XMVector3Normalize(XMLoadFloat3(&up)));
+	XMStoreFloat3(&right, XMVector3Normalize(XMLoadFloat3(&right)));
 }

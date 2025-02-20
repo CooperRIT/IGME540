@@ -56,5 +56,8 @@ private:
 	//Matrix
 	bool dirty;
 	DirectX::XMFLOAT4X4 worldMatrix;
+
+	void UpdateVectors();
+	bool vectorDirty = false;
 };
 

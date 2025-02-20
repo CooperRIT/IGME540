@@ -21,18 +21,6 @@ struct VertexShaderToCopyToGpuToGPU
 
 };
 
-//This is for ImGUI
-struct EntityInformation 
-{
-	/*float objectPosition[3];  
-	float objectRotation[3];
-	float objectScale[3];*/
-
-	DirectX::XMFLOAT3 objectPosition;
-	DirectX::XMFLOAT3 objectRotation;
-	DirectX::XMFLOAT3 objectScale;
-};
-
 class Game
 {
 public:
@@ -60,7 +48,6 @@ private:
 	void BuildUI();
 	void ChangeColor(float* _color, float r, float g, float b, float a);
 	void CopyXMFloatToArray(DirectX::XMFLOAT3 xmFloat, float* floatArray);
-	void CopyInfoToStruct(int index);
 
 	// Shaders and shader-related constructs
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
@@ -79,11 +66,11 @@ private:
 
 	float color[4];
 
-	//EntityInfo List
-	std::vector <EntityInformation> entityInfo;
-
 	//Mesh List
 	std::vector<std::shared_ptr<GameEntity>> gameEntities;
+
+	//Camera List
+	std::vector<std::shared_ptr<Camera>> cameraList;
 
 	//constantbuffer
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
@@ -92,7 +79,7 @@ private:
 	std::shared_ptr<GameEntity> triangle;
 
 	//camera
-	std::shared_ptr<Camera> camera;
+	std::shared_ptr<Camera> activeCamera;
 };
 
 

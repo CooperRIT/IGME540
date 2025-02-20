@@ -1,4 +1,6 @@
 #include "Camera.h"
+#include "Input.h"
+
 using namespace DirectX;
 
 Camera::Camera(DirectX::XMFLOAT3 pos, float moveSpeed, float lookSpeed, float fov, float aspectRatio)
@@ -22,7 +24,44 @@ Camera::~Camera()
 
 void Camera::Update(float deltaTime)
 {
-	//Input code
+	//W
+	if (Input::KeyDown('W'))
+	{
+		transform->MoveRelative(0, 0, 1 * deltaTime);
+	}
+
+	//A
+	if (Input::KeyDown('A'))
+	{
+		transform->MoveRelative(-1 * deltaTime, 0, 0);
+	}
+
+	//S
+	if (Input::KeyDown('S'))
+	{
+		transform->MoveRelative(0, 0, -1 * deltaTime);
+	}
+
+	//D
+	if (Input::KeyDown('D'))
+	{
+		transform->MoveRelative(1 * deltaTime, 0, 0);
+	}
+
+	//Mouse Movement
+	if (Input::MouseLeftDown())
+	{
+		int cursorMovementX = Input::GetMouseXDelta() * mouseLookSpeed;
+		int cursorMovementY = Input::GetMouseYDelta() * mouseLookSpeed;
+
+		cursorMovementX = (int)(Clamp(cursorMovementX, -0.5f * DirectX::XM_PI, 0.5f * DirectX::XM_PI));
+
+
+		printf("efojwejf");
+
+		transform->Rotate(cursorMovementY * deltaTime, cursorMovementX * deltaTime, 0);
+	}
+
 
 	UpdateViewMatrix();
 }
@@ -69,4 +108,13 @@ DirectX::XMFLOAT4X4 Camera::GetProjection()
 std::shared_ptr<Transform> Camera::GetTransform()
 {
 	return transform;
+}
+
+float Camera::Clamp(float input, float min, float max)
+{
+   if (input > max)
+	{
+		return max;
+	}
+	return input < min ? min : input;
 }

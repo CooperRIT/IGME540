@@ -34,5 +34,6 @@ private:
 	float movementSpeed;
 	float mouseLookSpeed;
 
+	float Clamp(float input, float min, float max);
 };
 
