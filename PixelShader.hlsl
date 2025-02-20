@@ -1,3 +1,10 @@
+cbuffer DataFromCPP : register(b0)
+{
+	float time;
+}
+
+
+
 
 // Struct representing the data we expect to receive from earlier pipeline stages
 // - Should match the output of our corresponding vertex shader
@@ -26,9 +33,16 @@ struct VertexToPixel
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
-	return input.color;
+	float2 target = float2(200,200);
+	float2 pixel = input.screenPosition.xy;
+
+	float dist = distance(target, pixel) * 10;
+	float c = sin(dist * .01f);
+
+	float4 fullColor = float4(c, c, c, c);
+	float4 colorTint = float4(0.5f, .2f, 1.0f, 1);
+
+
+
+	return fullColor * colorTint;
 }

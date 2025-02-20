@@ -172,11 +172,16 @@ void Game::Initialize()
 		Graphics::Context->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 	}
 
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(triangleVerticies, 3, triangleIndicies, 3)));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(squareVerticies, 4, squareIndicies, 6)));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(objectVerticies, 6, objectIndicies, 9)));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 12)));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10)));
+	std::shared_ptr<SimpleVertexShader> vs = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"VertexShader.cso").c_str());
+	std::shared_ptr<SimplePixelShader> ps =  std::make_shared <SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PixelShader.cso").c_str());
+
+	std::shared_ptr<Material> mat1 = std::make_shared <Material>(vs, ps);
+
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(triangleVerticies, 3, triangleIndicies, 3), mat1));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(squareVerticies, 4, squareIndicies, 6), mat1));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(objectVerticies, 6, objectIndicies, 9), mat1));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 12), mat1));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10), mat1));
 
 
 
@@ -209,7 +214,6 @@ void Game::Initialize()
 
 	//Initialize Window Color and color tint
 	ChangeColor(color, 0.4f, 0.6f, 0.75f, 0.0f);
-	ChangeColor(&objectColorTint.x, 1.0f, 1.0f, 1.0f, 0.0f);
 }
 
 
@@ -239,6 +243,10 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::LoadShaders()
 {
+	
+
+
+
 	// BLOBs (or Binary Large OBjects) for reading raw data from external files
 	// - This is a simplified way of handling big chunks of external data
 	// - Literally just a big array of bytes read from a file
@@ -358,7 +366,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//triangle->Draw();
 	for (const auto& obj : gameEntities) 
 	{
-		obj->Draw(objectColorTint, activeCamera);
+		obj->Draw(activeCamera);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles

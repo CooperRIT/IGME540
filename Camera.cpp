@@ -54,12 +54,11 @@ void Camera::Update(float deltaTime)
 		int cursorMovementX = Input::GetMouseXDelta() * mouseLookSpeed;
 		int cursorMovementY = Input::GetMouseYDelta() * mouseLookSpeed;
 
-		cursorMovementX = (int)(Clamp(cursorMovementX, -0.5f * DirectX::XM_PI, 0.5f * DirectX::XM_PI));
-
-
 		printf("efojwejf");
 
 		transform->Rotate(cursorMovementY * deltaTime, cursorMovementX * deltaTime, 0);
+
+		transform->SetRotation(transform->GetRotation().x, Clamp(transform->GetRotation().y, -DirectX::XM_PIDIV2, DirectX::XM_PIDIV2), transform->GetRotation().z);
 	}
 
 

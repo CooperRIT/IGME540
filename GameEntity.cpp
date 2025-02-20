@@ -5,10 +5,12 @@
 #include "Game.h";
 
 
-GameEntity::GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer, Mesh _mesh)
+GameEntity::GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer, Mesh _mesh, Material mat)
 {
 	//Assign constant buffer
 	constantBuffer = _constantBuffer;
+
+	material = std::make_shared<Material>(mat);
 
 	//Create Mesh
 	mesh = std::make_shared<Mesh>(_mesh);
@@ -33,11 +35,15 @@ std::shared_ptr<Mesh> GameEntity::GetMesh()
 	return mesh;
 }
 
-void GameEntity::Draw(DirectX::XMFLOAT4 colorTint, std::shared_ptr<Camera> camera)
+std::shared_ptr<Material> GameEntity::GetMaterial()
+{
+	return material;
+}
+
+void GameEntity::Draw(std::shared_ptr<Camera> camera)
 {
 	//Constant Buffer Mapping
 	VertexShaderToCopyToGpuToGPU dataToCopy{};
-	dataToCopy.colorTint = colorTint;
 	dataToCopy.worldMatrix = transform->GetWorldMatrix();
 	dataToCopy.viewMatrix = camera->GetView();
 	dataToCopy.projectionMatrix = camera->GetProjection();
