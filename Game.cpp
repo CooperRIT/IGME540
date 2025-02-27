@@ -175,13 +175,13 @@ void Game::Initialize()
 	std::shared_ptr<SimpleVertexShader> vs = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"VertexShader.cso").c_str());
 	std::shared_ptr<SimplePixelShader> ps =  std::make_shared <SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PixelShader.cso").c_str());
 
-	std::shared_ptr<Material> mat1 = std::make_shared <Material>(vs, ps);
+	//std::shared_ptr<Material> mat1 = std::make_shared <Material>(vs, ps);
 
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(triangleVerticies, 3, triangleIndicies, 3), mat1));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(squareVerticies, 4, squareIndicies, 6), mat1));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(objectVerticies, 6, objectIndicies, 9), mat1));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 12), mat1));
-	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10), mat1));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(triangleVerticies, 3, triangleIndicies, 3)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(squareVerticies, 4, squareIndicies, 6)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(objectVerticies, 6, objectIndicies, 9)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(hexagonVerticies, 6, hexagonIndicies, 12)));
+	gameEntities.push_back(std::make_shared<GameEntity>(constantBuffer, Mesh(pentagonVerticies, 5, pentagonIndicies, 10)));
 
 
 

@@ -5,12 +5,12 @@
 #include "Game.h";
 
 
-GameEntity::GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer, Mesh _mesh, Material mat)
+GameEntity::GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer, Mesh _mesh)
 {
 	//Assign constant buffer
 	constantBuffer = _constantBuffer;
 
-	material = std::make_shared<Material>(mat);
+	//material = std::make_shared<Material>(mat);
 
 	//Create Mesh
 	mesh = std::make_shared<Mesh>(_mesh);

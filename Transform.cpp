@@ -75,6 +75,11 @@ void Transform::MoveAbsolute(float x, float y, float z)
 	XMStoreFloat3(&position, XMLoadFloat3(&position) + XMVectorSet(x, y, z, 0));
 }
 
+void Transform::MoveAbsolute(DirectX::XMFLOAT3 offset)
+{
+
+}
+
 void Transform::MoveRelative(float x, float y, float z)
 {
 	//Move along our "local" axes

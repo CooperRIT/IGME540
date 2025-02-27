@@ -19,7 +19,7 @@ class GameEntity
 		Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
 	public:
-		GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer,Mesh _mesh, Material mat);
+		GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer,Mesh _mesh);
 		~GameEntity();
 
 		std::shared_ptr<Transform> GetTransform();

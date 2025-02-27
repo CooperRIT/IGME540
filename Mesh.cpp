@@ -57,6 +57,11 @@ Mesh::Mesh(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCo
 	}
 }
 
+Mesh::Mesh(const char* name, const char* objFile) : name(name)
+{
+
+}
+
 Mesh::~Mesh()
 {
 
@@ -71,6 +76,11 @@ void Mesh::Draw()
 	Graphics::Context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	Graphics::Context->DrawIndexed(indexBufferCount, 0, 0);
+}
+
+DirectX::XMFLOAT4 Mesh::XMGetColor()
+{
+	return DirectX::XMFLOAT4();
 }
 
 
