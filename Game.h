@@ -13,15 +13,6 @@
 #include <wrl/client.h>
 #include <vector>
 
-
-struct VertexShaderToCopyToGpuToGPU
-{
-	DirectX::XMFLOAT4X4 worldMatrix;
-	DirectX::XMFLOAT4X4 viewMatrix;
-	DirectX::XMFLOAT4X4 projectionMatrix;
-
-};
-
 class Game
 {
 public:
@@ -39,9 +30,6 @@ public:
 
 private:
 
-	// Initialization helper methods - feel free to customize, combine, remove, etc.
-	void LoadShaders();
-
 	Transform transform;
 
 	//Gui Helper Methods
@@ -49,11 +37,6 @@ private:
 	void BuildUI();
 	void ChangeColor(float* _color, float r, float g, float b, float a);
 	void CopyXMFloatToArray(DirectX::XMFLOAT3 xmFloat, float* floatArray);
-
-	// Shaders and shader-related constructs
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
 	//Gui Variables
 	int currentSliderValue;
@@ -73,14 +56,18 @@ private:
 	//Camera List
 	std::vector<std::shared_ptr<Camera>> cameraList;
 
-	//constantbuffer
-	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
-
 	//Game Entities
 	std::shared_ptr<GameEntity> triangle;
 
 	//camera
 	std::shared_ptr<Camera> activeCamera;
+
+	//Shaders
+	std::shared_ptr<SimpleVertexShader> vs;
+	std::shared_ptr<SimplePixelShader> ps;
+
+	//Materials
+	std::vector<std::shared_ptr<Material>> materials;
 };
 
 

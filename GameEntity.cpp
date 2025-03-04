@@ -5,15 +5,13 @@
 #include "Game.h";
 
 
-GameEntity::GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer, Mesh _mesh)
+GameEntity::GameEntity(Mesh _mesh, Material mat)
 {
-	//Assign constant buffer
-	constantBuffer = _constantBuffer;
-
-	//material = std::make_shared<Material>(mat);
-
 	//Create Mesh
 	mesh = std::make_shared<Mesh>(_mesh);
+
+	//Create Material
+	material = std::make_shared<Material>(mat);
 
 	//Create Transform
 	transform = std::make_shared<Transform>();
@@ -42,28 +40,16 @@ std::shared_ptr<Material> GameEntity::GetMaterial()
 
 void GameEntity::Draw(std::shared_ptr<Camera> camera)
 {
-	//Constant Buffer Mapping
-	VertexShaderToCopyToGpuToGPU dataToCopy{};
-	dataToCopy.worldMatrix = transform->GetWorldMatrix();
-	dataToCopy.viewMatrix = camera->GetView();
-	dataToCopy.projectionMatrix = camera->GetProjection();
+	material->GetPS()->SetShader();
+	material->GetVS()->SetShader();
 
+	std::shared_ptr<SimpleVertexShader> vs = material->GetVS();
+	vs->SetFloat4("colorTint", material->GetColorTint()); // Strings here MUST
+	vs->SetMatrix4x4("world", transform->GetWorldMatrix()); // match variable
+	vs->SetMatrix4x4("view", camera->GetView()); // names in your
+	vs->SetMatrix4x4("projection", camera->GetProjection()); // shader’s cbuffer!
 
-	//First we need to Map the buffer
-	D3D11_MAPPED_SUBRESOURCE mapped{};
-	Graphics::Context->Map(
-		constantBuffer.Get(),
-		0,
-		D3D11_MAP_WRITE_DISCARD,
-		0,
-		&mapped);
-
-	//Copy To GPU using memcpy
-	memcpy(mapped.pData, &dataToCopy, sizeof(VertexShaderToCopyToGpuToGPU));
-
-	//Unmap when done
-	Graphics::Context->Unmap(constantBuffer.Get(), 0);
-
+	vs->CopyAllBufferData();
 
 	mesh->Draw();
 }

@@ -57,10 +57,10 @@ Mesh::Mesh(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCo
 	}
 }
 
-Mesh::Mesh(const char* name, const char* objFile) : name(name)
-{
-
-}
+//Mesh::Mesh(const char* name, const char* objFile) : name(name)
+//{
+//
+//}
 
 Mesh::~Mesh()
 {

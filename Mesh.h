@@ -9,7 +9,7 @@ class Mesh
 {
 public:
 	Mesh(Vertex* vertices, int vertexCount, unsigned int* indicies, int indexCount);
-	Mesh(const char* name, const char* objFile);
+	//Mesh(const char* name, const char* objFile);
 	~Mesh();
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
@@ -23,7 +23,7 @@ public:
 	DirectX::XMFLOAT4 XMGetColor();
 	float* PtrGetColor();
 	
-	const char* name;
+	//const char* name;
 private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;

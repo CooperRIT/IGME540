@@ -11,15 +11,8 @@
 
 class GameEntity
 {
-	private:
-		std::shared_ptr<Mesh> mesh;
-		std::shared_ptr<Transform> transform;
-		std::shared_ptr<Material> material;
-
-		Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
-
 	public:
-		GameEntity(Microsoft::WRL::ComPtr<ID3D11Buffer>& _constantBuffer,Mesh _mesh);
+		GameEntity(Mesh _mesh, Material mat);
 		~GameEntity();
 
 		std::shared_ptr<Transform> GetTransform();
@@ -28,5 +21,12 @@ class GameEntity
 
 		void Draw(std::shared_ptr<Camera> camera);
 
+
+	private:
+		std::shared_ptr<Mesh> mesh;
+		std::shared_ptr<Transform> transform;
+		std::shared_ptr<Material> material;
+
+		Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 };
 
