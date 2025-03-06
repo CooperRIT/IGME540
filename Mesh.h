@@ -2,6 +2,10 @@
 #include "Graphics.h"
 #include "Vertex.h"
 
+#include <fstream>
+#include <stdexcept>
+#include <vector>
+
 #include <d3d11.h>
 #include <wrl/client.h>
 
@@ -9,7 +13,7 @@ class Mesh
 {
 public:
 	Mesh(Vertex* vertices, int vertexCount, unsigned int* indicies, int indexCount);
-	//Mesh(const char* name, const char* objFile);
+	Mesh(const char* objFile);
 	~Mesh();
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
@@ -33,4 +37,7 @@ private:
 
 	int indexBufferCount;
 	int vertexBufferCount;
+
+	//Methods
+	void CreateMeshBuffers(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount);
 };

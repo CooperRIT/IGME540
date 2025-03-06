@@ -36,7 +36,13 @@ private:
 	void UpdateImGui(float deltaTime);
 	void BuildUI();
 	void ChangeColor(float* _color, float r, float g, float b, float a);
-	void CopyXMFloatToArray(DirectX::XMFLOAT3 xmFloat, float* floatArray);
+
+	//Game Class Helper Methods
+	void CreateGeometry();
+	void MeshLoaderShell();
+	void CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint);
+	void CreateGameEntity(Mesh mesh, Material mat);
+	void CreateCamera(DirectX::XMFLOAT3 pos, float moveSpeed, float lookSpeed, float fov, float aspectRatio);
 
 	//Gui Variables
 	int currentSliderValue;
@@ -68,6 +74,9 @@ private:
 
 	//Materials
 	std::vector<std::shared_ptr<Material>> materials;
+
+	//Mesh List For temp storage
+	std::vector<std::shared_ptr<Mesh>> temp_Meshes;
 };
 
 

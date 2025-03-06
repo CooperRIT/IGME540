@@ -38,98 +38,7 @@ void Game::Initialize()
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
-	//CreateGeometry();
-
-	//Mesh Class Code
-	
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	XMFLOAT4 yellow = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 purple = XMFLOAT4(0.5f, 0.0f, 0.5f, 1.0f);
-
-	XMFLOAT4 orange = XMFLOAT4(1.0f, 0.647f, 0.0f, 1.0f);
-	XMFLOAT4 cyan = XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f);
-
-
-
-	Vertex triangleVerticies[] =
-	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
-	};
-
-	Vertex squareVerticies[] =
-	{
-		{XMFLOAT3(-1.0f, 1.0f, 0.0f), red},
-		{XMFLOAT3(-.75f, 1.0f, 0.0f), blue},
-		{XMFLOAT3(-1.0f, .75f, 0.0f), green},
-		{XMFLOAT3(-.75, .75f, 0.0f), red},
-	};
-
-	Vertex objectVerticies[] =
-	{
-		{XMFLOAT3(.6f, 1.0f, 0.0f), green},
-		{XMFLOAT3(.8f, 0.7f, 0.0f), green},
-		{XMFLOAT3(.4f, 0.7f, 0.0f), green},
-		{XMFLOAT3(0.6f, .4f, 0.0f), green},
-		{XMFLOAT3(.2f, .4f, 0.0f), green},
-		{XMFLOAT3(1.0f, .4f, 0.0f), green}
-	};
-
-	Vertex hexagonVerticies[] =
-	{
-		{XMFLOAT3(0.0f, 0.5f, 0.0f), yellow},
-		{XMFLOAT3(0.5f, 0.25f, 0.0f), purple},
-		{XMFLOAT3(0.5f, -0.25f, 0.0f), yellow},
-		{XMFLOAT3(0.0f, -0.5f, 0.0f), purple},
-		{XMFLOAT3(-0.5f, -0.25f, 0.0f), yellow},
-		{XMFLOAT3(-0.5f, 0.25f, 0.0f), purple}
-	};
-
-	Vertex pentagonVerticies[] =
-	{
-		{XMFLOAT3(0.0f, 0.5f, 0.0f), orange},
-		{XMFLOAT3(0.5f, 0.2f, 0.0f), cyan},
-		{XMFLOAT3(0.3f, -0.3f, 0.0f), orange},
-		{XMFLOAT3(-0.3f, -0.3f, 0.0f), cyan},
-		{XMFLOAT3(-0.5f, 0.2f, 0.0f), orange}
-	};
-
-
-	unsigned int triangleIndicies[] = { 0, 1, 2 };
-
-	unsigned int squareIndicies[] = 
-	{ 
-		0, 1, 2,
-		1, 3, 2
-	};
-
-	unsigned int objectIndicies[] =
-	{
-		0, 1, 2,
-		2, 3, 4,
-		1, 5, 3
-	};
-
-	unsigned int hexagonIndicies[] =
-	{
-		0, 1, 5,
-		1, 2, 5,
-		2, 3, 5,
-		3, 4, 5
-	};
-
-	unsigned int pentagonIndicies[] =
-	{
-		0, 1, 2,
-		2, 3, 4,
-		4, 0, 2
-	};
-	
-
+	CreateGeometry();
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -149,42 +58,18 @@ void Game::Initialize()
 	DirectX::XMFLOAT4 colorTint2(.5f, .5f, .5f, 1.0f);
 	DirectX::XMFLOAT4 colorTint3(.2f, .2f, .2f, 1.0f);
 
-
-	materials.push_back(std::make_shared<Material>(vs, ps, colorTint));
-	materials.push_back(std::make_shared<Material>(vs, ps, colorTint2));
-	materials.push_back(std::make_shared<Material>(vs, ps, colorTint3));
+	//Shell method for loading all meshes
+	MeshLoaderShell();
 
 
+	CreateMaterial(vs, ps, colorTint);
+	CreateMaterial(vs, ps, colorTint2);
+	CreateMaterial(vs, ps, colorTint3);
 
-	gameEntities.push_back(std::make_shared<GameEntity>(Mesh(triangleVerticies, 3, triangleIndicies, 3), *materials[0]));
-	gameEntities.push_back(std::make_shared<GameEntity>(Mesh(squareVerticies, 4, squareIndicies, 6), *materials[0]));
-	gameEntities.push_back(std::make_shared<GameEntity>(Mesh(objectVerticies, 6, objectIndicies, 9), *materials[1]));
-	gameEntities.push_back(std::make_shared<GameEntity>(Mesh(hexagonVerticies, 6, hexagonIndicies, 12), *materials[1]));
-	gameEntities.push_back(std::make_shared<GameEntity>(Mesh(pentagonVerticies, 5, pentagonIndicies, 10), *materials[2]));
+	CreateGameEntity(*temp_Meshes[0], *materials[0]);
 
-
-
-	cameraList.push_back(
-		std::make_shared<Camera>
-		(
-			XMFLOAT3(0, 0, -5),
-			5.0f,
-			2.0f,
-			XM_PIDIV4,
-			Window::AspectRatio()
-			)
-	);
-	
-	cameraList.push_back
-	(
-		std::make_shared<Camera>
-		(
-			XMFLOAT3(0, 0, -1),
-			10.0f,
-			1.0f,
-			XM_PIDIV4/2,
-			Window::AspectRatio())
-	);
+	CreateCamera(XMFLOAT3(0, 0, -5), 5.0f, 2.0f, XM_PIDIV4, Window::AspectRatio());
+	CreateCamera(XMFLOAT3(0, 0, -1), 10.0f, 1.0f, XM_PIDIV4/2, Window::AspectRatio());
 
 	activeCamera = cameraList[0];
 
@@ -204,8 +89,6 @@ Game::~Game()
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-
-	//Deallocate Meshes Array
 }
 
 // --------------------------------------------------------
@@ -331,60 +214,30 @@ void::Game::BuildUI()
 
 	if (ImGui::CollapsingHeader("Meshes"))
 	{
-
-		ImGui::Text("Triangle:");
-		ImGui::Text("Triangles: %i", 1);
-		ImGui::Text("Vertices: %i", gameEntities[0]->GetMesh()->GetVertexCount());
-		ImGui::Text("Indices: %i", gameEntities[0]->GetMesh()->GetIndexCount());
-		ImGui::Text("\n");
-
-		ImGui::Text("Quad:");
-		ImGui::Text("Triangles: %i", 2);
-		ImGui::Text("Vertices: %i", gameEntities[1]->GetMesh()->GetVertexCount());
-		ImGui::Text("Indices: %i", gameEntities[1]->GetMesh()->GetIndexCount());
-		ImGui::Text("\n");
-
-		ImGui::Text("Object:");
-		ImGui::Text("Triangles: %i", 3);
-		ImGui::Text("Vertices: %i", gameEntities[2]->GetMesh()->GetVertexCount());
-		ImGui::Text("Indices: %i", gameEntities[2]->GetMesh()->GetIndexCount());
-		ImGui::Text("\n");
-
-		ImGui::Text("Hexagon:");
-		ImGui::Text("Triangles: %i", 6);
-		ImGui::Text("Vertices: %i", gameEntities[3]->GetMesh()->GetVertexCount());
-		ImGui::Text("Indices: %i", gameEntities[3]->GetMesh()->GetIndexCount());
-		ImGui::Text("\n");
-
-		ImGui::Text("Pentagon:");
-		ImGui::Text("Triangles: %i", 3);
-		ImGui::Text("Vertices: %i", gameEntities[4]->GetMesh()->GetVertexCount());
-		ImGui::Text("Indices: %i", gameEntities[4]->GetMesh()->GetIndexCount());
-		ImGui::Text("\n");
 	}
 
 	if (ImGui::CollapsingHeader("Entities")) 
 	{
 
-		for (int i = 0; i < 5; i++) 
-		{
-			if (ImGui::CollapsingHeader(("Entity " + std::to_string(i + 1)).c_str())) 
-			{
-				//Local Variables
-				XMFLOAT3 pos = gameEntities[i]->GetTransform()->GetPosition();
-				XMFLOAT3 rotation = gameEntities[i]->GetTransform()->GetRotation();
-				XMFLOAT3 scale = gameEntities[i]->GetTransform()->GetScale();
+		//for (int i = 0; i < 5; i++) 
+		//{
+		//	if (ImGui::CollapsingHeader(("Entity " + std::to_string(i + 1)).c_str())) 
+		//	{
+		//		//Local Variables
+		//		XMFLOAT3 pos = gameEntities[i]->GetTransform()->GetPosition();
+		//		XMFLOAT3 rotation = gameEntities[i]->GetTransform()->GetRotation();
+		//		XMFLOAT3 scale = gameEntities[i]->GetTransform()->GetScale();
 
 
-				ImGui::SliderFloat3("Position", &pos.x, -1.0f, 1.0f);
-				ImGui::SliderFloat3("Rotation", &rotation.x, -5.0f, 5.0f);
-				ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 5.0f);
+		//		ImGui::SliderFloat3("Position", &pos.x, -1.0f, 1.0f);
+		//		ImGui::SliderFloat3("Rotation", &rotation.x, -5.0f, 5.0f);
+		//		ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 5.0f);
 
-				gameEntities[i]->GetTransform()->SetPosition(pos);
-				gameEntities[i]->GetTransform()->SetRotation(rotation);
-				gameEntities[i]->GetTransform()->SetScale(scale);
-			}
-		}
+		//		gameEntities[i]->GetTransform()->SetPosition(pos);
+		//		gameEntities[i]->GetTransform()->SetRotation(rotation);
+		//		gameEntities[i]->GetTransform()->SetScale(scale);
+		//	}
+		//}
 
 	}
 
@@ -398,8 +251,6 @@ void::Game::BuildUI()
 			}
 		}
 	}
-
-
 
 
 	if (demoWindowState)
@@ -420,11 +271,48 @@ void::Game::ChangeColor(float* _color, float r, float g, float b, float a)
 	_color[3] = a;
 }
 
-void::Game::CopyXMFloatToArray(XMFLOAT3 xmFloat, float* floatArray)
+void Game::CreateGeometry()
 {
-	floatArray[0] = xmFloat.x;
-	floatArray[1] = xmFloat.y;
-	floatArray[2] = xmFloat.z;
+
+}
+
+void Game::MeshLoaderShell()
+{
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/sphere.obj").c_str()));
+}
+
+/// <summary>
+/// Creates Material and Adds It To Materials List
+/// </summary>
+/// <param name="_vs"></param>
+/// <param name="_ps"></param>
+/// <param name="_colorTint"></param>
+void Game::CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint)
+{
+	materials.push_back(std::make_shared<Material>(vs, ps, _colorTint));
+}
+
+/// <summary>
+/// Creates an object, and adds it to the game entities list
+/// </summary>
+/// <param name="mesh"></param>
+/// <param name="mat"></param>
+void Game::CreateGameEntity(Mesh mesh, Material mat)
+{
+	gameEntities.push_back(std::make_shared<GameEntity>(mesh, mat));
+}
+
+/// <summary>
+/// Creates a camera and adds it to our camera list
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="moveSpeed"></param>
+/// <param name="lookSpeed"></param>
+/// <param name="fov"></param>
+/// <param name="aspectRatio"></param>
+void Game::CreateCamera(DirectX::XMFLOAT3 pos, float moveSpeed, float lookSpeed, float fov, float aspectRatio)
+{
+	cameraList.push_back(std::make_shared<Camera>(pos, moveSpeed, lookSpeed, fov, aspectRatio));
 }
 
 
