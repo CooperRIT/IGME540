@@ -38,18 +38,22 @@ std::shared_ptr<Material> GameEntity::GetMaterial()
 	return material;
 }
 
-void GameEntity::Draw(std::shared_ptr<Camera> camera)
+void GameEntity::Draw(std::shared_ptr<Camera> camera, float time)
 {
 	material->GetPS()->SetShader();
 	material->GetVS()->SetShader();
 
 	std::shared_ptr<SimpleVertexShader> vs = material->GetVS();
-	vs->SetFloat4("colorTint", material->GetColorTint()); // Strings here MUST
-	vs->SetMatrix4x4("world", transform->GetWorldMatrix()); // match variable
-	vs->SetMatrix4x4("view", camera->GetView()); // names in your
-	vs->SetMatrix4x4("projection", camera->GetProjection()); // shader’s cbuffer!
+	vs->SetMatrix4x4("world", transform->GetWorldMatrix());
+	vs->SetMatrix4x4("view", camera->GetView());
+	vs->SetMatrix4x4("projection", camera->GetProjection());
+
+	std::shared_ptr<SimplePixelShader> ps = material->GetPS();
+	ps->SetFloat4("colorTint", material->GetColorTint());
+	ps->SetFloat("time", time);
 
 	vs->CopyAllBufferData();
+	ps->CopyAllBufferData();
 
 	mesh->Draw();
 }

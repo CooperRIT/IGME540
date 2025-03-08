@@ -15,11 +15,9 @@ struct VertexToPixel
 // The entry point for our pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    float4 tintedColor = colorTint;
-
     float2 uv = input.uv;
 
     float3 normal = normalize(input.normal);
 
-    return colorTint;
+    return float4(uv, 0, 0);
 }

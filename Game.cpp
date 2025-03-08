@@ -51,27 +51,61 @@ void Game::Initialize()
 		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
+	//TODO
+	//1. Create a map for game entities to names(For organization
+	//2. Organize this code (maybe in a different method)
+	//3. Only pass in time if they shader wants time
+
+
+	//Base Shaders
 	vs = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"VertexShader.cso").c_str());
-	ps =  std::make_shared <SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PixelShader.cso").c_str());
+	ps =  std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PixelShader.cso").c_str());
+
+	//Uv shader
+	std::shared_ptr uvPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"DebugUVPixelShader.cso").c_str());
+	
+	//Normal Shader
+	std::shared_ptr normalPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"DebugNormalPixelShader.cso").c_str());
+
+	//Custom Shader
+	std::shared_ptr customPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"CustomPixelShader.cso").c_str());
 
 	DirectX::XMFLOAT4 colorTint(1.0f, 1.0f, 1.0f, 1.0f);
-	DirectX::XMFLOAT4 colorTint2(.5f, .5f, .5f, 1.0f);
+	DirectX::XMFLOAT4 colorTint2(1.0f, 1.0f, 1.0f, 1.0f);
 	DirectX::XMFLOAT4 colorTint3(.2f, .2f, .2f, 1.0f);
+	DirectX::XMFLOAT4 colorTint4(1.0f, 0.0f, 1.0f, 1.0f);
 
 	//Shell method for loading all meshes
 	MeshLoaderShell();
 
-
+	//Create Materials
 	CreateMaterial(vs, ps, colorTint);
-	CreateMaterial(vs, ps, colorTint2);
-	CreateMaterial(vs, ps, colorTint3);
+	CreateMaterial(vs, uvPixelShader, colorTint2);
+	CreateMaterial(vs, normalPixelShader, colorTint3);
+	CreateMaterial(vs, customPixelShader, colorTint4);
 
+	//Create Game Entities
 	CreateGameEntity(*temp_Meshes[0], *materials[0]);
+	CreateGameEntity(*temp_Meshes[1], *materials[1]);
+	CreateGameEntity(*temp_Meshes[2], *materials[2]);
+	CreateGameEntity(*temp_Meshes[3], *materials[3]);
 
-	CreateCamera(XMFLOAT3(0, 0, -5), 5.0f, 2.0f, XM_PIDIV4, Window::AspectRatio());
+	CreateCamera(XMFLOAT3(0, 0, -20), 10.0f, 2.0f, XM_PIDIV4, Window::AspectRatio());
 	CreateCamera(XMFLOAT3(0, 0, -1), 10.0f, 1.0f, XM_PIDIV4/2, Window::AspectRatio());
 
 	activeCamera = cameraList[0];
+
+	//Move Game Entities
+
+	//Move the TopHat
+	gameEntities[1]->GetTransform()->SetPosition(XMFLOAT3(5, 0, 0));
+
+	//Move The Helix
+	gameEntities[2]->GetTransform()->SetPosition(XMFLOAT3(10, 0, 0));
+
+	//Move the Cylinder
+	gameEntities[3]->GetTransform()->SetPosition(XMFLOAT3(0, -5, 0));
+
 
 	//Initialize Window Color and color tint
 	ChangeColor(color, 0.4f, 0.6f, 0.75f, 0.0f);
@@ -149,7 +183,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//triangle->Draw();
 	for (const auto& obj : gameEntities) 
 	{
-		obj->Draw(activeCamera);
+		obj->Draw(activeCamera, totalTime);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
@@ -214,31 +248,42 @@ void::Game::BuildUI()
 
 	if (ImGui::CollapsingHeader("Meshes"))
 	{
+		int counter = 1;
+		for (const auto& obj : gameEntities)
+		{
+			ImGui::Text(("Entity " + std::to_string(counter) + " Vert Count: %d").c_str(), obj->GetMesh()->GetVertexCount());
+			ImGui::Text(("Entity " + std::to_string(counter) + " Index Count: %d").c_str(), obj->GetMesh()->GetIndexCount());
+
+			ImGui::Text(" ");
+			
+			counter++;
+		}
 	}
 
 	if (ImGui::CollapsingHeader("Entities")) 
 	{
+		//CONVERT THIS TO NAMES
+		int counter = 1;
+		for (const auto& obj : gameEntities)
+		{
+			if (ImGui::CollapsingHeader(("Entity " + std::to_string(counter)).c_str()))
+			{
+				//Local Variables
+				XMFLOAT3 pos = obj->GetTransform()->GetPosition();
+				XMFLOAT3 rotation = obj->GetTransform()->GetRotation();
+				XMFLOAT3 scale = obj->GetTransform()->GetScale();
 
-		//for (int i = 0; i < 5; i++) 
-		//{
-		//	if (ImGui::CollapsingHeader(("Entity " + std::to_string(i + 1)).c_str())) 
-		//	{
-		//		//Local Variables
-		//		XMFLOAT3 pos = gameEntities[i]->GetTransform()->GetPosition();
-		//		XMFLOAT3 rotation = gameEntities[i]->GetTransform()->GetRotation();
-		//		XMFLOAT3 scale = gameEntities[i]->GetTransform()->GetScale();
 
+				ImGui::SliderFloat3("Position", &pos.x, -20.0f, 20.0f);
+				ImGui::SliderFloat3("Rotation", &rotation.x, -5.0f, 5.0f);
+				ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 5.0f);
 
-		//		ImGui::SliderFloat3("Position", &pos.x, -1.0f, 1.0f);
-		//		ImGui::SliderFloat3("Rotation", &rotation.x, -5.0f, 5.0f);
-		//		ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 5.0f);
-
-		//		gameEntities[i]->GetTransform()->SetPosition(pos);
-		//		gameEntities[i]->GetTransform()->SetRotation(rotation);
-		//		gameEntities[i]->GetTransform()->SetScale(scale);
-		//	}
-		//}
-
+				obj->GetTransform()->SetPosition(pos);
+				obj->GetTransform()->SetRotation(rotation);
+				obj->GetTransform()->SetScale(scale);
+			}
+			counter++;
+		}
 	}
 
 	if (ImGui::CollapsingHeader("Camera"))
@@ -278,7 +323,19 @@ void Game::CreateGeometry()
 
 void Game::MeshLoaderShell()
 {
+	//Load Sphere
 	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/sphere.obj").c_str()));
+
+	//Load Top Hat
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/TopHat.obj").c_str()));
+
+	//Load Helix
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/helix.obj").c_str()));
+
+	//Load Cylinder
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cylinder.obj").c_str()));
+
+
 }
 
 /// <summary>
@@ -289,7 +346,7 @@ void Game::MeshLoaderShell()
 /// <param name="_colorTint"></param>
 void Game::CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint)
 {
-	materials.push_back(std::make_shared<Material>(vs, ps, _colorTint));
+	materials.push_back(std::make_shared<Material>(_vs, _ps, _colorTint));
 }
 
 /// <summary>

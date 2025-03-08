@@ -27,25 +27,25 @@ void Camera::Update(float deltaTime)
 	//W
 	if (Input::KeyDown('W'))
 	{
-		transform->MoveRelative(0, 0, 1 * deltaTime);
+		transform->MoveRelative(0, 0, movementSpeed * deltaTime);
 	}
 
 	//A
 	if (Input::KeyDown('A'))
 	{
-		transform->MoveRelative(-1 * deltaTime, 0, 0);
+		transform->MoveRelative(-movementSpeed * deltaTime, 0, 0);
 	}
 
 	//S
 	if (Input::KeyDown('S'))
 	{
-		transform->MoveRelative(0, 0, -1 * deltaTime);
+		transform->MoveRelative(0, 0, -movementSpeed * deltaTime);
 	}
 
 	//D
 	if (Input::KeyDown('D'))
 	{
-		transform->MoveRelative(1 * deltaTime, 0, 0);
+		transform->MoveRelative(movementSpeed * deltaTime, 0, 0);
 	}
 
 	//Mouse Movement
@@ -58,7 +58,7 @@ void Camera::Update(float deltaTime)
 
 		transform->Rotate(cursorMovementY * deltaTime, cursorMovementX * deltaTime, 0);
 
-		transform->SetRotation(transform->GetRotation().x, Clamp(transform->GetRotation().y, -DirectX::XM_PIDIV2, DirectX::XM_PIDIV2), transform->GetRotation().z);
+		transform->SetRotation(Clamp(transform->GetRotation().x, -DirectX::XM_PIDIV2, DirectX::XM_PIDIV2), transform->GetRotation().y, transform->GetRotation().z);
 	}
 
 

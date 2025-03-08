@@ -148,5 +148,14 @@
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="DebugUVPixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="DebugNormalsPixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CustomPixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
