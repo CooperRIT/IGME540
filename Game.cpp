@@ -70,6 +70,8 @@ void Game::Initialize()
 	//Custom Shader
 	std::shared_ptr customPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"CustomPixelShader.cso").c_str());
 
+	std::shared_ptr multiTexturePixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"MultiTexturePixelShader.cso").c_str());
+
 	DirectX::XMFLOAT4 colorTint(1.0f, 1.0f, 1.0f, 1.0f);
 	DirectX::XMFLOAT4 colorTint2(1.0f, 1.0f, 1.0f, 1.0f);
 	DirectX::XMFLOAT4 colorTint3(.2f, .2f, .2f, 1.0f);
@@ -78,11 +80,48 @@ void Game::Initialize()
 	//Shell method for loading all meshes
 	MeshLoaderShell();
 
+	//Create Textures
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> oakTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenWallTexture;
+
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrickTexture.png", nullptr, brickTexture.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/OakTexture.png", nullptr, oakTexture.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrokenWallTexture.png", nullptr, brokenWallTexture.GetAddressOf(), (size_t)1000);
+
+	//Create sampler state
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerStateComPtr;
+
+	D3D11_SAMPLER_DESC sampleStateDesc = {};
+	sampleStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	sampleStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	Graphics::Device.Get()->CreateSamplerState(&sampleStateDesc, samplerStateComPtr.GetAddressOf());
+
+
 	//Create Materials
 	CreateMaterial(vs, ps, colorTint);
-	CreateMaterial(vs, uvPixelShader, colorTint2);
-	CreateMaterial(vs, normalPixelShader, colorTint3);
-	CreateMaterial(vs, customPixelShader, colorTint4);
+	CreateMaterial(vs, ps, colorTint2);
+	CreateMaterial(vs, ps, colorTint3);
+	CreateMaterial(vs, multiTexturePixelShader, colorTint);
+
+	//Map Textures and Samplers to materials
+	materials[0]->AddTextureSRV("SurfaceTexture", oakTexture);
+	materials[0]->AddSampler("BasicSampler", samplerStateComPtr);
+
+	materials[1]->AddTextureSRV("SurfaceTexture", oakTexture);
+	materials[1]->AddSampler("BasicSampler", samplerStateComPtr);
+
+	materials[2]->AddTextureSRV("SurfaceTexture", brickTexture);
+	materials[2]->AddSampler("BasicSampler", samplerStateComPtr);
+
+	materials[3]->AddTextureSRV("SurfaceTexture", brickTexture);
+	materials[3]->AddTextureSRV("SecondaryTexture", brokenWallTexture);
+	materials[3]->AddSampler("BasicSampler", samplerStateComPtr);
 
 	//Create Game Entities
 	CreateGameEntity(*temp_Meshes[0], *materials[0]);
@@ -266,14 +305,12 @@ void::Game::BuildUI()
 		int counter = 1;
 		for (const auto& obj : gameEntities)
 		{
+			//Local Variables
+			XMFLOAT3 pos = obj->GetTransform()->GetPosition();
+			XMFLOAT3 rotation = obj->GetTransform()->GetRotation();
+			XMFLOAT3 scale = obj->GetTransform()->GetScale();
 			if (ImGui::CollapsingHeader(("Entity " + std::to_string(counter)).c_str()))
 			{
-				//Local Variables
-				XMFLOAT3 pos = obj->GetTransform()->GetPosition();
-				XMFLOAT3 rotation = obj->GetTransform()->GetRotation();
-				XMFLOAT3 scale = obj->GetTransform()->GetScale();
-
-
 				ImGui::SliderFloat3("Position", &pos.x, -20.0f, 20.0f);
 				ImGui::SliderFloat3("Rotation", &rotation.x, -5.0f, 5.0f);
 				ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 5.0f);
@@ -294,6 +331,28 @@ void::Game::BuildUI()
 			{
 				activeCamera = cameraList[i];
 			}
+		}
+	}
+
+	if (ImGui::CollapsingHeader("MaterialInfo"))
+	{
+		int counter = 1;
+		for (auto t : gameEntities)
+		{
+			XMFLOAT4 colorTint = t->GetMaterial()->GetColorTint();
+			XMFLOAT2 uvScale = t->GetMaterial()->GetUVScale();
+			XMFLOAT2 uvOffset = t->GetMaterial()->GetUVOffset();
+			if(ImGui::CollapsingHeader(("Material " + std::to_string(counter)).c_str()))
+			{
+				ImGui::ColorEdit4("Color Tint: ", &colorTint.x);
+				ImGui::SliderFloat2("UV Scale: ", &uvScale.x, .1f, 10);
+				ImGui::SliderFloat2("UV Offset: ", &uvOffset.x, 0.0f, 10);
+
+				t->GetMaterial()->SetColorTint(colorTint);
+				t->GetMaterial()->SetUVScale(uvScale.x, uvScale.y);
+				t->GetMaterial()->SetUVOffset(uvOffset.x, uvOffset.y);
+			}
+			counter++;
 		}
 	}
 

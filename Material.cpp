@@ -1,12 +1,18 @@
 #include "Material.h"
 
-Material::Material(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint)
+Material::Material(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint) : uvOffset(0,0), uvScale(1,1)
 {
 	vs = _vs;
 
 	ps = _ps;
 
 	colorTint = _colorTint;
+}
+
+Material::Material(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, DirectX::XMFLOAT2 _uvOffset, DirectX::XMFLOAT2 _uvScale) : Material(_vs, _ps, _colorTint)
+{
+	uvOffset = _uvOffset;
+	uvScale = _uvScale;
 }
 
 std::shared_ptr<SimpleVertexShader> Material::GetVS()
@@ -24,6 +30,21 @@ DirectX::XMFLOAT4 Material::GetColorTint()
 	return colorTint;
 }
 
+DirectX::XMFLOAT2 Material::GetUVScale()
+{
+	return uvScale;
+}
+
+DirectX::XMFLOAT2 Material::GetUVOffset()
+{
+	return uvOffset;
+}
+
+void Material::SetColorTint(DirectX::XMFLOAT4 _colorTint)
+{
+	colorTint = _colorTint;
+}
+
 void Material::SetVS(std::shared_ptr<SimpleVertexShader> _vs)
 {
 	vs = _vs;
@@ -32,4 +53,37 @@ void Material::SetVS(std::shared_ptr<SimpleVertexShader> _vs)
 void Material::SetPS(std::shared_ptr<SimplePixelShader> _ps)
 {
 	ps = _ps;
+}
+
+void Material::SetUVOffset(float x, float y)
+{
+	uvOffset = DirectX::XMFLOAT2(x, y);
+}
+
+void Material::SetUVScale(float x, float y)
+{
+	uvScale = DirectX::XMFLOAT2(x, y);
+}
+
+void Material::AddTextureSRV(std::string name, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texturePtr)
+{
+	textureSRVs.insert({ name, texturePtr });
+}
+
+void Material::AddSampler(std::string name, Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerPtr)
+{
+	samplers.insert({ name, samplerPtr });
+}
+
+void Material::PrepareMaterial()
+{
+	for (auto& t : textureSRVs) 
+	{ 
+		ps->SetShaderResourceView(t.first.c_str(), t.second); 
+	}
+	for (auto& s : samplers) 
+	{ 
+		ps->SetSamplerState(s.first.c_str(), s.second); 
+	}
+
 }

@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "SimpleShader.h"
 #include "Material.h"
+#include "WICTextureLoader.h"
 
 #include <d3d11.h>
 #include <wrl/client.h>

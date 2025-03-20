@@ -50,7 +50,11 @@ void GameEntity::Draw(std::shared_ptr<Camera> camera, float time)
 
 	std::shared_ptr<SimplePixelShader> ps = material->GetPS();
 	ps->SetFloat4("colorTint", material->GetColorTint());
+	ps->SetFloat2("uvScale", material->GetUVScale());
+	ps->SetFloat2("uvOffset", material->GetUVOffset());
 	ps->SetFloat("time", time);
+
+	material->PrepareMaterial();
 
 	vs->CopyAllBufferData();
 	ps->CopyAllBufferData();
