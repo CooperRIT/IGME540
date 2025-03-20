@@ -70,6 +70,7 @@ void Game::Initialize()
 	//Custom Shader
 	std::shared_ptr customPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"CustomPixelShader.cso").c_str());
 
+	//Multi Texture Shader
 	std::shared_ptr multiTexturePixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"MultiTexturePixelShader.cso").c_str());
 
 	DirectX::XMFLOAT4 colorTint(1.0f, 1.0f, 1.0f, 1.0f);
@@ -303,21 +304,22 @@ void::Game::BuildUI()
 	{
 		//CONVERT THIS TO NAMES
 		int counter = 1;
-		for (const auto& obj : gameEntities)
+		for (const auto& t : gameEntities)
 		{
+			Transform* trans = t->GetTransform().get();
 			//Local Variables
-			XMFLOAT3 pos = obj->GetTransform()->GetPosition();
-			XMFLOAT3 rotation = obj->GetTransform()->GetRotation();
-			XMFLOAT3 scale = obj->GetTransform()->GetScale();
+			XMFLOAT3 pos = trans->GetPosition();
+			XMFLOAT3 rotation = trans->GetRotation();
+			XMFLOAT3 scale = trans->GetScale();
 			if (ImGui::CollapsingHeader(("Entity " + std::to_string(counter)).c_str()))
 			{
 				ImGui::SliderFloat3("Position", &pos.x, -20.0f, 20.0f);
 				ImGui::SliderFloat3("Rotation", &rotation.x, -5.0f, 5.0f);
 				ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 5.0f);
 
-				obj->GetTransform()->SetPosition(pos);
-				obj->GetTransform()->SetRotation(rotation);
-				obj->GetTransform()->SetScale(scale);
+				trans->SetPosition(pos);
+				trans->SetRotation(rotation);
+				trans->SetScale(scale);
 			}
 			counter++;
 		}
@@ -339,18 +341,20 @@ void::Game::BuildUI()
 		int counter = 1;
 		for (auto t : gameEntities)
 		{
-			XMFLOAT4 colorTint = t->GetMaterial()->GetColorTint();
-			XMFLOAT2 uvScale = t->GetMaterial()->GetUVScale();
-			XMFLOAT2 uvOffset = t->GetMaterial()->GetUVOffset();
+			Material* mat = t->GetMaterial().get();
+
+			XMFLOAT4 colorTint = mat->GetColorTint();
+			XMFLOAT2 uvScale = mat->GetUVScale();
+			XMFLOAT2 uvOffset = mat->GetUVOffset();
 			if(ImGui::CollapsingHeader(("Material " + std::to_string(counter)).c_str()))
 			{
 				ImGui::ColorEdit4("Color Tint: ", &colorTint.x);
 				ImGui::SliderFloat2("UV Scale: ", &uvScale.x, .1f, 10);
 				ImGui::SliderFloat2("UV Offset: ", &uvOffset.x, 0.0f, 10);
 
-				t->GetMaterial()->SetColorTint(colorTint);
-				t->GetMaterial()->SetUVScale(uvScale.x, uvScale.y);
-				t->GetMaterial()->SetUVOffset(uvOffset.x, uvOffset.y);
+				mat->SetColorTint(colorTint);
+				mat->SetUVScale(uvScale.x, uvScale.y);
+				mat->SetUVOffset(uvOffset.x, uvOffset.y);
 			}
 			counter++;
 		}
