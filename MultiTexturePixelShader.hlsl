@@ -1,3 +1,5 @@
+#include "LightingHelperMethods.hlsli"
+
 // Constant buffer for color tint, uv offset, and UV scale
 cbuffer MaterialInfo : register(b0)
 {
@@ -9,14 +11,6 @@ cbuffer MaterialInfo : register(b0)
 Texture2D SurfaceTexture : register(t0); //t = texture
 Texture2D SecondaryTexture: register(t1);
 SamplerState BasicSampler : register(s0); //s = sampler
-
-// Struct representing the data we expect to receive from earlier pipeline stages
-struct VertexToPixel
-{
-    float4 screenPosition	: SV_POSITION;
-    float2 uv : TEXCOORD;
-    float3 normal : NORMAL;
-};
 
 // The entry point for our pixel shader
 float4 main(VertexToPixel input) : SV_TARGET

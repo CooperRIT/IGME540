@@ -38,6 +38,7 @@ public:
 
 
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
+	DirectX::XMFLOAT4X4 GetInverseTransposeMatrix();
 
 
 private:

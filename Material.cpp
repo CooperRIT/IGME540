@@ -1,15 +1,17 @@
 #include "Material.h"
 
-Material::Material(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint) : uvOffset(0,0), uvScale(1,1)
+Material::Material(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, float _roughness) : uvOffset(0, 0), uvScale(1, 1), roughness(0)
 {
 	vs = _vs;
 
 	ps = _ps;
 
 	colorTint = _colorTint;
+
+	roughness = _roughness;
 }
 
-Material::Material(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, DirectX::XMFLOAT2 _uvOffset, DirectX::XMFLOAT2 _uvScale) : Material(_vs, _ps, _colorTint)
+Material::Material(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, float _roughness, DirectX::XMFLOAT2 _uvOffset, DirectX::XMFLOAT2 _uvScale) : Material(_vs, _ps, _colorTint, _roughness)
 {
 	uvOffset = _uvOffset;
 	uvScale = _uvScale;
@@ -75,7 +77,7 @@ void Material::AddSampler(std::string name, Microsoft::WRL::ComPtr<ID3D11Sampler
 	samplers.insert({ name, samplerPtr });
 }
 
-void Material::PrepareMaterial()
+void Material::PrepareMaterial(DirectX::XMFLOAT3 cameraPos)
 {
 	for (auto& t : textureSRVs) 
 	{ 
@@ -86,4 +88,6 @@ void Material::PrepareMaterial()
 		ps->SetSamplerState(s.first.c_str(), s.second); 
 	}
 
+	ps->SetFloat3("cameraPos", cameraPos);
+	ps->SetFloat("roughness", roughness);
 }

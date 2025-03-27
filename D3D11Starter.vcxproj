@@ -246,6 +246,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="LightingHelperMethods.hlsli" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

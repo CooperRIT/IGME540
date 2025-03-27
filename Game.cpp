@@ -105,10 +105,10 @@ void Game::Initialize()
 
 
 	//Create Materials
-	CreateMaterial(vs, ps, colorTint);
-	CreateMaterial(vs, ps, colorTint2);
-	CreateMaterial(vs, ps, colorTint3);
-	CreateMaterial(vs, multiTexturePixelShader, colorTint);
+	CreateMaterial(vs, ps, colorTint, 0);
+	CreateMaterial(vs, ps, colorTint2, 0);
+	CreateMaterial(vs, ps, colorTint3, 0);
+	CreateMaterial(vs, multiTexturePixelShader, colorTint, 0);
 
 	//Map Textures and Samplers to materials
 	materials[0]->AddTextureSRV("SurfaceTexture", oakTexture);
@@ -149,6 +149,9 @@ void Game::Initialize()
 
 	//Initialize Window Color and color tint
 	ChangeColor(color, 0.4f, 0.6f, 0.75f, 0.0f);
+
+	//Initialize ambient light color
+	ambientLightColor = XMFLOAT3(.25f, .25f, .25f);
 }
 
 
@@ -224,10 +227,15 @@ void Game::Draw(float deltaTime, float totalTime)
 	for (const auto& obj : gameEntities) 
 	{
 		obj->Draw(activeCamera, totalTime);
+
+		//Set the ambient light color of each object.
+		obj->GetMaterial()->GetPS()->SetFloat3("ambientLightColor", ambientLightColor);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
+
+
 
 
 	// Frame END
@@ -407,9 +415,9 @@ void Game::MeshLoaderShell()
 /// <param name="_vs"></param>
 /// <param name="_ps"></param>
 /// <param name="_colorTint"></param>
-void Game::CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint)
+void Game::CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, float _roughness)
 {
-	materials.push_back(std::make_shared<Material>(_vs, _ps, _colorTint));
+	materials.push_back(std::make_shared<Material>(_vs, _ps, _colorTint, _roughness));
 }
 
 /// <summary>

@@ -171,6 +171,13 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 	return worldMatrix;
 }
 
+//DirectX::XMFLOAT4X4 Transform::GetInverseTransposeMatrix()
+//{
+//	DirectX::XMMATRIX maxtrix = DirectX::XMLoadFloat4x4(&worldMatrix);
+//
+//	return 
+//}
+
 void Transform::UpdateVectors()
 {
 	// Create a rotation matrix from the pitchYawRoll angles

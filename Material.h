@@ -11,11 +11,13 @@ class Material
 public:
 	Material(std::shared_ptr<SimpleVertexShader> _vs,
 		std::shared_ptr<SimplePixelShader> _ps,
-		DirectX::XMFLOAT4 _colorTint);
+		DirectX::XMFLOAT4 _colorTint,
+		float _roughness);
 
 	Material(std::shared_ptr<SimpleVertexShader> _vs,
 		std::shared_ptr<SimplePixelShader> _ps,
 		DirectX::XMFLOAT4 _colorTint,
+		float _roughness,
 		DirectX::XMFLOAT2 _uvOffset,
 		DirectX::XMFLOAT2 _uvScale);
 
@@ -34,7 +36,7 @@ public:
 	void AddTextureSRV(std:: string name, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texturePtr);
 	void AddSampler(std::string name, Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerPtr);
 
-	void PrepareMaterial();
+	void PrepareMaterial(DirectX::XMFLOAT3 cameraPos);
 
 private:
 	std::shared_ptr<SimpleVertexShader> vs;
@@ -47,6 +49,9 @@ private:
 	//texture info
 	DirectX::XMFLOAT2 uvOffset;
 	DirectX::XMFLOAT2 uvScale;
+
+	//Material Properties
+	float roughness;
 
 };
 

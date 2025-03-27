@@ -41,7 +41,7 @@ private:
 	//Game Class Helper Methods
 	void CreateGeometry();
 	void MeshLoaderShell();
-	void CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint);
+	void CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, float _roughness);
 	void CreateGameEntity(Mesh mesh, Material mat);
 	void CreateCamera(DirectX::XMFLOAT3 pos, float moveSpeed, float lookSpeed, float fov, float aspectRatio);
 
@@ -78,6 +78,9 @@ private:
 
 	//Mesh List For temp storage
 	std::vector<std::shared_ptr<Mesh>> temp_Meshes;
+
+	//Lighting
+	DirectX::XMFLOAT3 ambientLightColor;
 };
 
 

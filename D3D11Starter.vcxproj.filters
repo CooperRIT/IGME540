@@ -163,5 +163,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="LightingHelperMethods.hlsli">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
