@@ -171,12 +171,19 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 	return worldMatrix;
 }
 
-//DirectX::XMFLOAT4X4 Transform::GetInverseTransposeMatrix()
-//{
-//	DirectX::XMMATRIX maxtrix = DirectX::XMLoadFloat4x4(&worldMatrix);
-//
-//	return 
-//}
+DirectX::XMFLOAT4X4 Transform::GetInverseTransposeMatrix()
+{
+	DirectX::XMMATRIX matrix = DirectX::XMLoadFloat4x4(&worldMatrix);
+
+	// Inverse-transpose: First, invert the matrix, then transpose it
+	DirectX::XMMATRIX inverseTranspose = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, matrix));
+
+	// Store the result back into a float4x4
+	DirectX::XMFLOAT4X4 result;
+	DirectX::XMStoreFloat4x4(&result, inverseTranspose);
+
+	return result;
+}
 
 void Transform::UpdateVectors()
 {

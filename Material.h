@@ -3,6 +3,7 @@
 #include "SimpleShader.h"
 #include <memory>
 #include <DirectXMath.h>
+#include "Lights.h";
 
 
 class Material
@@ -37,6 +38,8 @@ public:
 	void AddSampler(std::string name, Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerPtr);
 
 	void PrepareMaterial(DirectX::XMFLOAT3 cameraPos);
+
+	void PrepareLight(std::vector<Light> lights);
 
 private:
 	std::shared_ptr<SimpleVertexShader> vs;

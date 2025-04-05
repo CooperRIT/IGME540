@@ -9,6 +9,8 @@
 #include "SimpleShader.h"
 #include "Material.h"
 #include "WICTextureLoader.h"
+#include "Lights.h"
+#include "Sky.h"
 
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -81,6 +83,17 @@ private:
 
 	//Lighting
 	DirectX::XMFLOAT3 ambientLightColor;
+
+	std::vector<Light> lights;
+
+	Light directionalLight;
+
+	Light pointLight;
+
+	Light spotLight;
+
+	//SkyBox
+	std::shared_ptr<Sky> skyBox;
 };
 
 

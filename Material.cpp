@@ -91,3 +91,20 @@ void Material::PrepareMaterial(DirectX::XMFLOAT3 cameraPos)
 	ps->SetFloat3("cameraPos", cameraPos);
 	ps->SetFloat("roughness", roughness);
 }
+
+void Material::PrepareLight(std::vector<Light> lights)
+{
+	/*for (int i = 0; i < lights.size(); i++)
+	{
+		switch (lights[i].Type)
+		{
+			case 0:
+				ps->SetData("directionalLight", &lights[i], sizeof(Light));
+				break;
+		}
+	}*/
+
+	ps->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
+}
+
+

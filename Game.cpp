@@ -73,10 +73,45 @@ void Game::Initialize()
 	//Multi Texture Shader
 	std::shared_ptr multiTexturePixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"MultiTexturePixelShader.cso").c_str());
 
+	//Sky Box Shaders
+	std::shared_ptr skyVertexShader = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"SkyVertexShader.cso").c_str());
+	std::shared_ptr skyPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"SkyPixelShader.cso").c_str());
+
 	DirectX::XMFLOAT4 colorTint(1.0f, 1.0f, 1.0f, 1.0f);
 	DirectX::XMFLOAT4 colorTint2(1.0f, 1.0f, 1.0f, 1.0f);
 	DirectX::XMFLOAT4 colorTint3(.2f, .2f, .2f, 1.0f);
 	DirectX::XMFLOAT4 colorTint4(1.0f, 0.0f, 1.0f, 1.0f);
+
+	//Create Lights
+	directionalLight = {};
+	pointLight = {};
+	spotLight = {};
+
+	//SetLight Properties
+	directionalLight.Type = 0;
+	directionalLight.Direction = XMFLOAT3(1, 0, 0);
+	directionalLight.Color = XMFLOAT3(1, 0.0f, 0.0f);
+	directionalLight.Intensity = 1;
+
+	pointLight.Type = 1;
+	pointLight.Position = XMFLOAT3(5, 2, 0);
+	pointLight.Range = 20.0f;
+	pointLight.Color = XMFLOAT3(0, 1, 0);
+	pointLight.Intensity = 1;
+
+	spotLight.Type = 2;
+	spotLight.Position = XMFLOAT3(10, -1, 0);
+	spotLight.Direction = XMFLOAT3(0, -1, 0);
+	spotLight.Range = 20.0f;
+	spotLight.Color = XMFLOAT3(1, 0, 1);
+	spotLight.Intensity = 1;
+	spotLight.SpotInnerAngle = 15.0f;
+	spotLight.SpotOuterAngle = 30.0f;
+
+	//AddLight to List
+	lights.push_back(directionalLight);
+	lights.push_back(pointLight);
+	lights.push_back(spotLight);
 
 	//Shell method for loading all meshes
 	MeshLoaderShell();
@@ -87,9 +122,27 @@ void Game::Initialize()
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> oakTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenWallTexture;
 
+	//Create Texture With Normal Map
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleStoneTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleStoneNormalTexture;
+
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrickTexture.png", nullptr, brickTexture.GetAddressOf(), (size_t)1000);
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/OakTexture.png", nullptr, oakTexture.GetAddressOf(), (size_t)1000);
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrokenWallTexture.png", nullptr, brokenWallTexture.GetAddressOf(), (size_t)1000);
+
+	//Load Texture With Normal Map
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/CobblestoneTexture.png", nullptr, cobbleStoneTexture.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/NormalMaps/cobblestone_normals.png", nullptr, cobbleStoneNormalTexture.GetAddressOf(), (size_t)1000);
+
+	//Load SkyBox Textures
+	std::vector<std::wstring> textureFiles = {
+	L"Assets/Skyboxes/right.png", L"Assets/Skyboxes/left.png",
+	L"Assets/Skyboxes/up.png", L"Assets/Skyboxes/down.png",
+	L"Assets/Skyboxes/back.png", L"Assets/Skyboxes/front.png"
+	};
+
+	//Load Skybox mesh
+	std::shared_ptr skyboxMesh = std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str());
 
 	//Create sampler state
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerStateComPtr;
@@ -103,12 +156,17 @@ void Game::Initialize()
 
 	Graphics::Device.Get()->CreateSamplerState(&sampleStateDesc, samplerStateComPtr.GetAddressOf());
 
+	//Create skybox
+	skyBox = std::make_shared<Sky>(skyboxMesh, samplerStateComPtr, textureFiles, skyPixelShader, skyVertexShader);
 
 	//Create Materials
 	CreateMaterial(vs, ps, colorTint, 0);
 	CreateMaterial(vs, ps, colorTint2, 0);
-	CreateMaterial(vs, ps, colorTint3, 0);
+	CreateMaterial(vs, ps, colorTint, 0);
 	CreateMaterial(vs, multiTexturePixelShader, colorTint, 0);
+
+	//Create Normal Map Material
+	CreateMaterial(vs, ps, colorTint, 0);
 
 	//Map Textures and Samplers to materials
 	materials[0]->AddTextureSRV("SurfaceTexture", oakTexture);
@@ -124,11 +182,24 @@ void Game::Initialize()
 	materials[3]->AddTextureSRV("SecondaryTexture", brokenWallTexture);
 	materials[3]->AddSampler("BasicSampler", samplerStateComPtr);
 
+	//Load Normal Mapped Textures To Material
+	materials[4]->AddTextureSRV("SurfaceTexture", cobbleStoneTexture);
+	materials[4]->AddTextureSRV("NormalMapTexture", cobbleStoneNormalTexture);
+	materials[4]->AddSampler("BasicSampler", samplerStateComPtr);
+
+	// For materials that don't require a normal map:
+	materials[0]->AddTextureSRV("NormalMapTexture", nullptr);
+	materials[1]->AddTextureSRV("NormalMapTexture", nullptr);
+	materials[2]->AddTextureSRV("NormalMapTexture", nullptr);
+	materials[3]->AddTextureSRV("NormalMapTexture", nullptr);
+
+
 	//Create Game Entities
 	CreateGameEntity(*temp_Meshes[0], *materials[0]);
 	CreateGameEntity(*temp_Meshes[1], *materials[1]);
 	CreateGameEntity(*temp_Meshes[2], *materials[2]);
 	CreateGameEntity(*temp_Meshes[3], *materials[3]);
+	CreateGameEntity(*temp_Meshes[4], *materials[4]);
 
 	CreateCamera(XMFLOAT3(0, 0, -20), 10.0f, 2.0f, XM_PIDIV4, Window::AspectRatio());
 	CreateCamera(XMFLOAT3(0, 0, -1), 10.0f, 1.0f, XM_PIDIV4/2, Window::AspectRatio());
@@ -146,12 +217,14 @@ void Game::Initialize()
 	//Move the Cylinder
 	gameEntities[3]->GetTransform()->SetPosition(XMFLOAT3(0, -5, 0));
 
+	//Move the cube
+	gameEntities[4]->GetTransform()->SetPosition(XMFLOAT3(-5, 0, -10));
 
 	//Initialize Window Color and color tint
-	ChangeColor(color, 0.4f, 0.6f, 0.75f, 0.0f);
+	ChangeColor(color, 0, 0, 0, 0.0f);
 
 	//Initialize ambient light color
-	ambientLightColor = XMFLOAT3(.25f, .25f, .25f);
+	ambientLightColor = XMFLOAT3(0.1f, 0.1f, 0.25f);
 }
 
 
@@ -230,11 +303,14 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		//Set the ambient light color of each object.
 		obj->GetMaterial()->GetPS()->SetFloat3("ambientLightColor", ambientLightColor);
+
+		//Sets the lights for the object
+		obj->GetMaterial()->PrepareLight(lights);
 	}
+	skyBox->Draw(activeCamera.get());
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
-
 
 
 
@@ -347,7 +423,7 @@ void::Game::BuildUI()
 	if (ImGui::CollapsingHeader("MaterialInfo"))
 	{
 		int counter = 1;
-		for (auto t : gameEntities)
+		for (auto& t : gameEntities)
 		{
 			Material* mat = t->GetMaterial().get();
 
@@ -367,6 +443,24 @@ void::Game::BuildUI()
 			counter++;
 		}
 	}
+
+	if (ImGui::CollapsingHeader("Light Info"))
+	{
+		int counter = 1;
+		for (auto& light : lights)
+		{
+			XMFLOAT3 lightColor = light.Color;
+
+			if (ImGui::CollapsingHeader(("Light " + std::to_string(counter)).c_str()))
+			{
+				ImGui::ColorEdit3("Color Tint: ", &lightColor.x);
+				
+			}
+			light.Color = lightColor;
+			counter++;
+		}
+	}
+
 
 
 	if (demoWindowState)
@@ -405,6 +499,9 @@ void Game::MeshLoaderShell()
 
 	//Load Cylinder
 	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cylinder.obj").c_str()));
+
+	//Load Cube
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str()));
 
 
 }

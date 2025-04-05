@@ -40,4 +40,6 @@ private:
 
 	//Methods
 	void CreateMeshBuffers(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount);
+
+	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
 };

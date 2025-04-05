@@ -9,22 +9,59 @@ cbuffer MaterialInfo : register(b0)
     float3 cameraPos;
     float roughness;
     float3 ambientLightColor;
+    Light lights[5];
 }
 
-Texture2D SurfaceTexture : register(t0); //t = texture
-SamplerState BasicSampler : register(s0); //s = sampler
-
+Texture2D SurfaceTexture : register(t0);
+SamplerState BasicSampler : register(s0);
+Texture2D NormalMapTexture : register(t1);
 
 // The entry point for our pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    float4 tintedColor = colorTint;
+    float3 N = normalize(input.normal);
 
     float2 uv = input.uv * uvScale + uvOffset;
 
-    float3 normal = normalize(input.normal);
-
+    // Sample base color texture
     float4 surfaceColor = SurfaceTexture.Sample(BasicSampler, uv);
 
-    return surfaceColor * tintedColor * ambientLightColor.xyzz;
+    float3 finalNormal = N;
+
+    // Sample and unpack the normal map
+    float3 unpackedNormal = NormalMapTexture.Sample(BasicSampler, uv).rgb * 2.0f - 1.0f;
+    unpackedNormal = normalize(unpackedNormal);
+
+    // Build TBN matrix
+    float3 T = normalize(input.tangent);
+    T = normalize(T - N * dot(T, N));
+    float3 B = cross(T, N);
+    float3x3 TBN = float3x3(T, B, N);
+
+    finalNormal = normalize(mul(unpackedNormal, TBN));
+
+    float4 totalLight = float4(0, 0, 0, 0);
+
+
+    for (int i = 0; i < 5; i++)
+    {
+        switch (lights[i].Type)
+        {
+            case 0:
+                totalLight += CalculateDirectionalLight(input, lights[i], cameraPos, roughness, finalNormal);
+                break;
+            case 1:
+                totalLight += CalculatePointLighting(input, lights[i], cameraPos, roughness, finalNormal);
+                break;
+            case 2:
+                totalLight += CalculateSpotlightLighting(input, lights[i], cameraPos, roughness, finalNormal);
+                break;
+        }
+    }
+
+    totalLight += ambientLightColor.xyzz;
+
+    return surfaceColor * colorTint * totalLight;
+
+    //return float4(finalNormal * 0.5f + 0.5f, 1);
 }
