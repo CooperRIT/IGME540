@@ -104,6 +104,11 @@ void Material::PrepareLight(std::vector<Light> lights)
 		}
 	}*/
 
+
+	//temp for setting ambient light
+	ps->SetFloat3("ambientLightColor", DirectX::XMFLOAT3(1, .81f, 0.87f));
+
+
 	ps->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
 }
 

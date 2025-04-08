@@ -109,12 +109,14 @@ void Sky::CreateRenderStates()
     D3D11_RASTERIZER_DESC rasterDesc = {};
     rasterDesc.FillMode = D3D11_FILL_SOLID;
     rasterDesc.CullMode = D3D11_CULL_FRONT; // Cull front faces to draw the inside
+	rasterDesc.DepthClipEnable = true;
     Graphics::Device.Get()->CreateRasterizerState(&rasterDesc, m_rasterizerState.GetAddressOf());
 
     // Create the depth stencil state
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
     depthStencilDesc.DepthEnable = true;
     depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
     Graphics::Device.Get()->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf());
 }
 
