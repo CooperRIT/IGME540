@@ -90,7 +90,7 @@ void Game::Initialize()
 	//SetLight Properties
 	directionalLight.Type = 0;
 	directionalLight.Direction = XMFLOAT3(1, 0, 0);
-	directionalLight.Color = XMFLOAT3(1, 0.0f, 0.0f);
+	directionalLight.Color = XMFLOAT3(1, 0, 0);
 	directionalLight.Intensity = 1;
 
 	pointLight.Type = 1;
@@ -138,7 +138,7 @@ void Game::Initialize()
 	std::vector<std::wstring> textureFiles = {
 	L"Assets/Skyboxes/right.png", L"Assets/Skyboxes/left.png",
 	L"Assets/Skyboxes/up.png", L"Assets/Skyboxes/down.png",
-	L"Assets/Skyboxes/back.png", L"Assets/Skyboxes/front.png"
+	L"Assets/Skyboxes/front.png", L"Assets/Skyboxes/back.png"
 	};
 
 	//Load Skybox mesh
@@ -152,9 +152,10 @@ void Game::Initialize()
 	sampleStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampleStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampleStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleStateDesc.MaxAnisotropy = 16;
 	sampleStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	Graphics::Device.Get()->CreateSamplerState(&sampleStateDesc, samplerStateComPtr.GetAddressOf());
+	Graphics::Device->CreateSamplerState(&sampleStateDesc, samplerStateComPtr.GetAddressOf());
 
 	//Create skybox
 	skyBox = std::make_shared<Sky>(skyboxMesh, samplerStateComPtr, textureFiles, skyPixelShader, skyVertexShader);
