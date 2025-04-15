@@ -24,7 +24,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     float2 uv = input.uv * uvScale + uvOffset;
 
     // Sample base color texture
-    float4 surfaceColor = SurfaceTexture.Sample(BasicSampler, uv);
+    float4 surfaceColor = pow(SurfaceTexture.Sample(BasicSampler, uv), 2.2f);
 
     float3 finalNormal = N;
 
@@ -59,9 +59,10 @@ float4 main(VertexToPixel input) : SV_TARGET
         }
     }
 
-    totalLight += ambientLightColor.xyzz;
+    totalLight += float4(ambientLightColor, 1);
 
-    return surfaceColor * colorTint * totalLight;
+    float4 totalColor = totalLight * colorTint * surfaceColor;
 
-    //return float4(finalNormal * 0.5f + 0.5f, 1);
+    return float4(pow(totalColor.xyz, 1.0f/2.2f), 1);
+
 }
