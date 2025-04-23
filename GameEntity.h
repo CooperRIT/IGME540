@@ -19,7 +19,7 @@ class GameEntity
 		std::shared_ptr<Mesh> GetMesh();
 		std::shared_ptr<Material> GetMaterial();
 
-		void Draw(std::shared_ptr<Camera> camera, float time);
+		void Draw(std::shared_ptr<Camera> camera, float time, DirectX::XMFLOAT4X4 lightViewMatrix, DirectX::XMFLOAT4X4 lightProjectionMatrix);
 
 
 	private:

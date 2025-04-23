@@ -46,6 +46,9 @@ private:
 	void CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, float _roughness);
 	void CreateGameEntity(Mesh mesh, Material mat);
 	void CreateCamera(DirectX::XMFLOAT3 pos, float moveSpeed, float lookSpeed, float fov, float aspectRatio);
+	void CreatePBRMaterial();
+	void CreateShadowMap();
+	void RenderShadowMap();
 
 	//Gui Variables
 	int currentSliderValue;
@@ -94,6 +97,19 @@ private:
 
 	//SkyBox
 	std::shared_ptr<Sky> skyBox;
+
+	//Shadow Information
+
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
+	DirectX::XMFLOAT4X4 lightViewMatrix;
+	DirectX::XMFLOAT4X4 lightProjectionMatrix;
+
+	std::shared_ptr<SimpleVertexShader> shadowVS;
+
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
+
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
 };
 
 

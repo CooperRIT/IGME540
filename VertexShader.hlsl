@@ -7,6 +7,8 @@ cbuffer ExternalData : register(b0)
     matrix view;
     matrix projection;
     matrix worldInvTranspose;
+    matrix lightView;
+    matrix lightProjection;
 }
 
 // The entry point for our vertex shader
@@ -25,6 +27,11 @@ VertexToPixel main(VertexShaderInput input)
     output.worldPosition = mul(world, float4(input.localPosition, 1)).xyz;
 
     output.tangent = mul((float3x3)world, input.tangent);
+
+    //Shadow Map Calculations
+    matrix shadowWVP = mul(lightProjection, mul(lightView, world));
+
+    output.shadowMapPos = mul(shadowWVP, float4(input.localPosition, 1.0f));
 
     return output;
 }
