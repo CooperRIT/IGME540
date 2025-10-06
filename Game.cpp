@@ -23,64 +23,24 @@ using namespace DirectX;
 // --------------------------------------------------------
 void Game::Initialize()
 {
-	// Initialize ImGui itself & platform/renderer backends
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui_ImplWin32_Init(Window::Handle());
-	ImGui_ImplDX11_Init(Graphics::Device.Get(), Graphics::Context.Get());
-	// Pick a style (uncomment one of these 3)
-	ImGui::StyleColorsDark();
+	InitalizeImGUI();
+	InitalizeShaders();
+	InitalizeTextures();
+	InitalizeMaterials();
+	InitalizeMeshes();
 
-	transform = Transform();
-	//ImGui::StyleColorsLight();
-	//ImGui::StyleColorsClassic();
+	/*
+	InitalizeEntities();
+	InitalizeLighting();
+	InitalizeCameras();
+	InitalizeShadows();
+	InitalizePostProcessing();
+	*/
 
-	// Helper methods for loading shaders, creating some basic
-	// geometry to draw and some simple camera matrices.
-	//  - You'll be expanding and/or replacing these later
-	CreateGeometry();
+	//What kind of shape should the GPU draw with our vertices?
+	Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// Set initial graphics API state
-	//  - These settings persist until we change them
-	//  - Some of these, like the primitive topology & input layout, probably won't change
-	//  - Others, like setting shaders, will need to be moved elsewhere later
-	{
-		// Tell the input assembler (IA) stage of the pipeline what kind of
-		// geometric primitives (points, lines or triangles) we want to draw.  
-		// Essentially: "What kind of shape should the GPU draw with our vertices?"
-		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	}
-
-	//TODO
-	//1. Create a map for game entities to names(For organization
-	//2. Organize this code (maybe in a different method)
-	//3. Only pass in time if they shader wants time
-
-
-	//Base Shaders
-	vs = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"VertexShader.cso").c_str());
-	ps =  std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PixelShader.cso").c_str());
-
-	//Uv shader
-	std::shared_ptr uvPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"DebugUVPixelShader.cso").c_str());
 	
-	//Normal Shader
-	std::shared_ptr normalPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"DebugNormalPixelShader.cso").c_str());
-
-	//Custom Shader
-	std::shared_ptr customPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"CustomPixelShader.cso").c_str());
-
-	//Multi Texture Shader
-	std::shared_ptr multiTexturePixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"MultiTexturePixelShader.cso").c_str());
-
-	//Sky Box Shaders
-	std::shared_ptr skyVertexShader = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"SkyVertexShader.cso").c_str());
-	std::shared_ptr skyPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"SkyPixelShader.cso").c_str());
-
-	DirectX::XMFLOAT4 colorTint(1.0f, 1.0f, 1.0f, 1.0f);
-	DirectX::XMFLOAT4 colorTint2(1.0f, 1.0f, 1.0f, 1.0f);
-	DirectX::XMFLOAT4 colorTint3(.2f, .2f, .2f, 1.0f);
-	DirectX::XMFLOAT4 colorTint4(1.0f, 0.0f, 1.0f, 1.0f);
 
 	//Create Lights
 	directionalLight = {};
@@ -113,113 +73,6 @@ void Game::Initialize()
 	lights.push_back(pointLight);
 	lights.push_back(spotLight);
 
-	//Shell method for loading all meshes
-	MeshLoaderShell();
-
-	//Create Textures
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> oakTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenWallTexture;
-
-	//Create Texture With Normal Map
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleStoneTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleStoneNormalTexture;
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrickTexture.png", nullptr, brickTexture.GetAddressOf(), (size_t)1000);
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/OakTexture.png", nullptr, oakTexture.GetAddressOf(), (size_t)1000);
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrokenWallTexture.png", nullptr, brokenWallTexture.GetAddressOf(), (size_t)1000);
-
-	//Load Texture With Normal Map
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/CobblestoneTexture.png", nullptr, cobbleStoneTexture.GetAddressOf(), (size_t)1000);
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/NormalMaps/cobblestone_normals.png", nullptr, cobbleStoneNormalTexture.GetAddressOf(), (size_t)1000);
-
-	//Load PBR stuff
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeAlbedo;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeMetal;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeNormals;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeRoughness;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneAlbedo;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneMetal;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneNormals;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneRoughness;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorAlbedo;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorMetal;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorNormals;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorRoughness;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughAlbedo;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughMetal;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughNormals;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughRoughness;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintAlbedo;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintMetal;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintNormals;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintRoughness;
-
-
-	// Load each texture
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/bronze_albedo.png", nullptr, bronzeAlbedo.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/bronze_metal.png", nullptr, bronzeMetal.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/bronze_normals.png", nullptr, bronzeNormals.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/bronze_roughness.png", nullptr, bronzeRoughness.GetAddressOf(), (size_t)1000);
-
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/cobblestone_albedo.png", nullptr, cobblestoneAlbedo.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/cobblestone_metal.png", nullptr, cobblestoneMetal.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/cobblestone_normals.png", nullptr, cobblestoneNormals.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/cobblestone_roughness.png", nullptr, cobblestoneRoughness.GetAddressOf(), (size_t)1000);
-
-	
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/floor_albedo.png", nullptr, floorAlbedo.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/floor_metal.png", nullptr, floorMetal.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/floor_normals.png", nullptr, floorNormals.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/floor_roughness.png", nullptr, floorRoughness.GetAddressOf(), (size_t)1000);
-
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/rough_albedo.png", nullptr, roughAlbedo.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/rough_metal.png", nullptr, roughMetal.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/rough_normals.png", nullptr, roughNormals.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/rough_roughness.png", nullptr, roughRoughness.GetAddressOf(), (size_t)1000);
-
-	
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/paint_albedo.png", nullptr, paintAlbedo.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/paint_metal.png", nullptr, paintMetal.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/paint_normals.png", nullptr, paintNormals.GetAddressOf(), (size_t)1000);
-
-	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),L"Assets/Textures/PBR/paint_roughness.png", nullptr, paintRoughness.GetAddressOf(), (size_t)1000);
-
-
-	//Load SkyBox Textures
-	std::vector<std::wstring> textureFiles = {
-	L"Assets/Skyboxes/right.png", L"Assets/Skyboxes/left.png",
-	L"Assets/Skyboxes/up.png", L"Assets/Skyboxes/down.png",
-	L"Assets/Skyboxes/front.png", L"Assets/Skyboxes/back.png"
-	};
-
-	//Load Skybox mesh
-	std::shared_ptr skyboxMesh = std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str());
-
-	//Create sampler state
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerStateComPtr;
 
 	D3D11_SAMPLER_DESC sampleStateDesc = {};
 	sampleStateDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -234,49 +87,7 @@ void Game::Initialize()
 	//Create skybox
 	skyBox = std::make_shared<Sky>(skyboxMesh, samplerStateComPtr, textureFiles, skyPixelShader, skyVertexShader);
 
-	//Create Materials
-	CreateMaterial(vs, ps, colorTint, 0);
-	CreateMaterial(vs, ps, colorTint2, 0);
-	CreateMaterial(vs, ps, colorTint, 0);
-	CreateMaterial(vs, multiTexturePixelShader, colorTint, 0);
-
-	//Create Normal Map Material
-	CreateMaterial(vs, ps, colorTint, 0);
-
-	//Map Textures and Samplers to materials
-	materials[0]->AddTextureSRV("Albedo", bronzeAlbedo);
-	materials[0]->AddTextureSRV("NormalMapTexture", bronzeNormals);
-	materials[0]->AddTextureSRV("RoughnessMapTexture", bronzeRoughness);
-	materials[0]->AddTextureSRV("MetalnessMapTexture", bronzeMetal);
-	materials[0]->AddSampler("BasicSampler", samplerStateComPtr);
-
-	materials[1]->AddTextureSRV("Albedo", floorAlbedo);
-	materials[1]->AddTextureSRV("NormalMapTexture", floorNormals);
-	materials[1]->AddTextureSRV("RoughnessMapTexture", floorRoughness);
-	materials[1]->AddTextureSRV("MetalnessMapTexture", floorMetal);
-	materials[1]->AddSampler("BasicSampler", samplerStateComPtr);
-
-
-	materials[2]->AddTextureSRV("Albedo", roughAlbedo);
-	materials[2]->AddTextureSRV("NormalMapTexture", roughNormals);
-	materials[2]->AddTextureSRV("RoughnessMapTexture", roughRoughness);
-	materials[2]->AddTextureSRV("MetalnessMapTexture", roughMetal);
-	materials[2]->AddSampler("BasicSampler", samplerStateComPtr);
-
-
-	materials[3]->AddTextureSRV("Albedo", paintAlbedo);
-	materials[3]->AddTextureSRV("NormalMapTexture", paintNormals);
-	materials[3]->AddTextureSRV("RoughnessMapTexture", paintRoughness);
-	materials[3]->AddTextureSRV("MetalnessMapTexture", paintMetal);
-	materials[3]->AddSampler("BasicSampler", samplerStateComPtr);
-
-
-	//Load Normal Mapped Textures To Material
-	materials[4]->AddTextureSRV("Albedo", cobblestoneAlbedo);
-	materials[4]->AddTextureSRV("NormalMapTexture", cobblestoneNormals);
-	materials[4]->AddTextureSRV("RoughnessMapTexture", cobblestoneRoughness);
-	materials[4]->AddTextureSRV("MetalnessMapTexture", cobblestoneMetal);
-	materials[4]->AddSampler("BasicSampler", samplerStateComPtr);
+	
 
 	//Create the shadow map
 	CreateShadowMap();
@@ -482,6 +293,7 @@ void::Game::BuildUI()
 	//Begins the creation of a new window
 	ImGui::Begin("GUI Inspector");
 
+
 	if (ImGui::CollapsingHeader("Application Details"))
 	{
 		ImGui::Text("FrameRate: %f fps", ImGui::GetIO().Framerate);
@@ -618,31 +430,9 @@ void::Game::ChangeColor(float* _color, float r, float g, float b, float a)
 	_color[3] = a;
 }
 
-void Game::CreateGeometry()
-{
-
-}
-
 void Game::MeshLoaderShell()
 {
-	//Load Sphere
-	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/sphere.obj").c_str()));
-
-	//Load Top Hat
-	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/TopHat.obj").c_str()));
-
-	//Load Helix
-	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/helix.obj").c_str()));
-
-	//Load Cylinder
-	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cylinder.obj").c_str()));
-
-	//Load Cube
-	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str()));
-
-	//Load Second Cube as the Floor
-	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str()));
-
+	
 
 }
 
@@ -893,6 +683,183 @@ void Game::PostProcessingPostRender()
 	Graphics::Context->Draw(3, 0); // Draw exactly 3 vertices (one triangle)
 }
 
+#pragma region InitalizingHelperMethods
+void Game::InitalizeImGUI()
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_ImplWin32_Init(Window::Handle());
+	ImGui_ImplDX11_Init(Graphics::Device.Get(), Graphics::Context.Get());
+	ImGui::StyleColorsDark();
+
+}
+
+void Game::InitalizeShaders()
+{
+	//Base Shaders
+	vs = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"VertexShader.cso").c_str());
+	ps = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PixelShader.cso").c_str());
+
+	//Uv shader
+	uvPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"DebugUVPixelShader.cso").c_str());
+
+	//Normal Shader
+	normalPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"DebugNormalPixelShader.cso").c_str());
+
+	//Custom Shader
+	customPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"CustomPixelShader.cso").c_str());
+
+	//Multi Texture Shader
+	multiTexturePixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"MultiTexturePixelShader.cso").c_str());
+
+	//Sky Box Shaders
+	skyVertexShader = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"SkyVertexShader.cso").c_str());
+	skyPixelShader = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"SkyPixelShader.cso").c_str());
+}
+
+void Game::InitalizeTextures()
+{
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrickTexture.png", nullptr, brickTexture.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/OakTexture.png", nullptr, oakTexture.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/BrokenWallTexture.png", nullptr, brokenWallTexture.GetAddressOf(), (size_t)1000);
+
+	//Load Texture With Normal Map
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/CobblestoneTexture.png", nullptr, cobbleStoneTexture.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/NormalMaps/cobblestone_normals.png", nullptr, cobbleStoneNormalTexture.GetAddressOf(), (size_t)1000);
 
 
+	// Load PBR Textures
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/bronze_albedo.png", nullptr, bronzeAlbedo.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/bronze_metal.png", nullptr, bronzeMetal.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/bronze_normals.png", nullptr, bronzeNormals.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/bronze_roughness.png", nullptr, bronzeRoughness.GetAddressOf(), (size_t)1000);
 
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/cobblestone_albedo.png", nullptr, cobblestoneAlbedo.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/cobblestone_metal.png", nullptr, cobblestoneMetal.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/cobblestone_normals.png", nullptr, cobblestoneNormals.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/cobblestone_roughness.png", nullptr, cobblestoneRoughness.GetAddressOf(), (size_t)1000);
+
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/floor_albedo.png", nullptr, floorAlbedo.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/floor_metal.png", nullptr, floorMetal.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/floor_normals.png", nullptr, floorNormals.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/floor_roughness.png", nullptr, floorRoughness.GetAddressOf(), (size_t)1000);
+
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/rough_albedo.png", nullptr, roughAlbedo.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/rough_metal.png", nullptr, roughMetal.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/rough_normals.png", nullptr, roughNormals.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/rough_roughness.png", nullptr, roughRoughness.GetAddressOf(), (size_t)1000);
+
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/paint_albedo.png", nullptr, paintAlbedo.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/paint_metal.png", nullptr, paintMetal.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/paint_normals.png", nullptr, paintNormals.GetAddressOf(), (size_t)1000);
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(), L"Assets/Textures/PBR/paint_roughness.png", nullptr, paintRoughness.GetAddressOf(), (size_t)1000);
+	
+	//Load Skybox Textures
+	textureFiles = {
+	L"Assets/Skyboxes/right.png", L"Assets/Skyboxes/left.png",
+	L"Assets/Skyboxes/up.png", L"Assets/Skyboxes/down.png",
+	L"Assets/Skyboxes/front.png", L"Assets/Skyboxes/back.png"
+	};
+}
+
+void Game::InitalizeMaterials()
+{
+	DirectX::XMFLOAT4 colorTint(1.0f, 1.0f, 1.0f, 1.0f);
+	DirectX::XMFLOAT4 colorTint2(1.0f, 1.0f, 1.0f, 1.0f);
+	DirectX::XMFLOAT4 colorTint3(.2f, .2f, .2f, 1.0f);
+	DirectX::XMFLOAT4 colorTint4(1.0f, 0.0f, 1.0f, 1.0f);
+
+	//Create Materials
+	CreateMaterial(vs, ps, colorTint, 0);
+	CreateMaterial(vs, ps, colorTint2, 0);
+	CreateMaterial(vs, ps, colorTint, 0);
+	CreateMaterial(vs, multiTexturePixelShader, colorTint, 0);
+
+	//Create Normal Map Material
+	CreateMaterial(vs, ps, colorTint, 0);
+
+	//Map Textures and Samplers to materials
+	materials[0]->AddTextureSRV("Albedo", bronzeAlbedo);
+	materials[0]->AddTextureSRV("NormalMapTexture", bronzeNormals);
+	materials[0]->AddTextureSRV("RoughnessMapTexture", bronzeRoughness);
+	materials[0]->AddTextureSRV("MetalnessMapTexture", bronzeMetal);
+	materials[0]->AddSampler("BasicSampler", samplerStateComPtr);
+
+	materials[1]->AddTextureSRV("Albedo", floorAlbedo);
+	materials[1]->AddTextureSRV("NormalMapTexture", floorNormals);
+	materials[1]->AddTextureSRV("RoughnessMapTexture", floorRoughness);
+	materials[1]->AddTextureSRV("MetalnessMapTexture", floorMetal);
+	materials[1]->AddSampler("BasicSampler", samplerStateComPtr);
+
+
+	materials[2]->AddTextureSRV("Albedo", roughAlbedo);
+	materials[2]->AddTextureSRV("NormalMapTexture", roughNormals);
+	materials[2]->AddTextureSRV("RoughnessMapTexture", roughRoughness);
+	materials[2]->AddTextureSRV("MetalnessMapTexture", roughMetal);
+	materials[2]->AddSampler("BasicSampler", samplerStateComPtr);
+
+
+	materials[3]->AddTextureSRV("Albedo", paintAlbedo);
+	materials[3]->AddTextureSRV("NormalMapTexture", paintNormals);
+	materials[3]->AddTextureSRV("RoughnessMapTexture", paintRoughness);
+	materials[3]->AddTextureSRV("MetalnessMapTexture", paintMetal);
+	materials[3]->AddSampler("BasicSampler", samplerStateComPtr);
+
+
+	//Load Normal Mapped Textures To Material
+	materials[4]->AddTextureSRV("Albedo", cobblestoneAlbedo);
+	materials[4]->AddTextureSRV("NormalMapTexture", cobblestoneNormals);
+	materials[4]->AddTextureSRV("RoughnessMapTexture", cobblestoneRoughness);
+	materials[4]->AddTextureSRV("MetalnessMapTexture", cobblestoneMetal);
+	materials[4]->AddSampler("BasicSampler", samplerStateComPtr);
+}
+
+void Game::InitalizeMeshes()
+{
+	//Load Sphere
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/sphere.obj").c_str()));
+
+	//Load Top Hat
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/TopHat.obj").c_str()));
+
+	//Load Helix
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/helix.obj").c_str()));
+
+	//Load Cylinder
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cylinder.obj").c_str()));
+
+	//Load Cube
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str()));
+
+	//Load Second Cube as the Floor
+	temp_Meshes.push_back(std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str()));
+
+	skyboxMesh = std::make_shared<Mesh>(FixPath("../../Assets/Models/cube.obj").c_str());
+
+}
+
+void Game::InitalizeEntities()
+{
+
+}
+
+void Game::InitalizeLighting()
+{
+
+}
+
+void Game::InitalizeCameras()
+{
+
+}
+
+void Game::InitalizeShadows()
+{
+
+}
+
+void Game::InitalizePostProcessing()
+{
+
+}
+#pragma endregion

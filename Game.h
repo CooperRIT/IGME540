@@ -41,7 +41,6 @@ private:
 	void ChangeColor(float* _color, float r, float g, float b, float a);
 
 	//Game Class Helper Methods
-	void CreateGeometry();
 	void MeshLoaderShell();
 	void CreateMaterial(std::shared_ptr<SimpleVertexShader> _vs, std::shared_ptr<SimplePixelShader> _ps, DirectX::XMFLOAT4 _colorTint, float _roughness);
 	void CreateGameEntity(Mesh mesh, Material mat);
@@ -78,8 +77,6 @@ private:
 	std::shared_ptr<Camera> activeCamera;
 
 	//Shaders
-	std::shared_ptr<SimpleVertexShader> vs;
-	std::shared_ptr<SimplePixelShader> ps;
 
 	//Materials
 	std::vector<std::shared_ptr<Material>> materials;
@@ -130,6 +127,77 @@ private:
 
 	int blurRadiusValue;
 	float aberationAmount;
+
+
+
+#pragma region Inializing Helper Methods
+	void InitalizeImGUI();
+	void InitalizeShaders();
+	void InitalizeTextures();
+	void InitalizeMaterials();
+	void InitalizeMeshes();
+	void InitalizeEntities();
+	void InitalizeLighting();
+	void InitalizeCameras();
+	void InitalizeShadows();
+	void InitalizePostProcessing();
+#pragma endregion
+
+#pragma region Shader Varaibles
+	//Shared Pointers
+	std::shared_ptr<SimpleVertexShader> vs;
+	std::shared_ptr<SimplePixelShader> ps;
+	std::shared_ptr<SimplePixelShader> uvPixelShader;
+	std::shared_ptr<SimplePixelShader> normalPixelShader;
+	std::shared_ptr<SimplePixelShader> customPixelShader;
+	std::shared_ptr<SimplePixelShader> multiTexturePixelShader;
+	std::shared_ptr<SimpleVertexShader> skyVertexShader;
+	std::shared_ptr<SimplePixelShader> skyPixelShader;
+
+#pragma endregion
+
+#pragma region Texture Variables
+	//Shared Pointers
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> oakTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenWallTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleStoneTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleStoneNormalTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeRoughness;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneRoughness;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorRoughness;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughRoughness;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintRoughness;
+
+	//Sky Box Vector
+	std::vector<std::wstring> textureFiles;
+
+#pragma endregion
+
+#pragma region Mesh Shared Pointers
+	std::shared_ptr<Mesh> skyboxMesh;
+
+#pragma endregion
+
+#pragma region Misc Variables
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerStateComPtr;
+#pragma endregion
+
 
 };
 
