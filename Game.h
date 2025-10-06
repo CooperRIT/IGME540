@@ -49,6 +49,9 @@ private:
 	void CreatePBRMaterial();
 	void CreateShadowMap();
 	void RenderShadowMap();
+	void PostProcessingSetUp();
+	void PostProcessingPreRender();
+	void PostProcessingPostRender();
 
 	//Gui Variables
 	int currentSliderValue;
@@ -110,6 +113,24 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+
+	//Post Processing
+	// Resources that are shared among all post processes
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
+	std::shared_ptr<SimpleVertexShader> ppVS;
+	// Resources that are tied to a particular post process
+	std::shared_ptr<SimplePixelShader> ppPS;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppRTV; // For rendering
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV; // For sampling
+
+	std::shared_ptr<SimplePixelShader> ppPSCA;
+
+	//0 = Blur, 1 = Chromatic Aberation
+	int ppType;
+
+	int blurRadiusValue;
+	float aberationAmount;
+
 };
 
 

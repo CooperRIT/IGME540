@@ -334,6 +334,8 @@ void Game::Initialize()
 
 	//Initialize ambient light color
 	ambientLightColor = XMFLOAT3(0.1f, 0.1f, 0.25f);
+
+	PostProcessingSetUp();
 }
 
 
@@ -398,6 +400,7 @@ void Game::Update(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
+
 	// Frame START
 	// - These things should happen ONCE PER FRAME
 	// - At the beginning of Game::Draw() before drawing *anything*
@@ -407,7 +410,11 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	
+
 	RenderShadowMap();
+
+	PostProcessingPreRender();
 
 	//triangle->Draw();
 	for (const auto& obj : gameEntities) 
@@ -425,6 +432,8 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	}
 	skyBox->Draw(activeCamera.get());
+
+	PostProcessingPostRender();
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
@@ -579,6 +588,14 @@ void::Game::BuildUI()
 			counter++;
 		}
 	}
+	if (ImGui::CollapsingHeader("Post Processing"))
+	{
+		ImGui::SliderInt("PP Type", &ppType, 0, 1);
+		ImGui::SliderInt("Blur Radius", &blurRadiusValue, 0, 100);
+		ImGui::SliderFloat("ChromaticAberation Intensity", &aberationAmount, 0, 1);
+	}
+
+
 	ImGui::Image((ImTextureID)shadowSRV.Get(), ImVec2(512, 512));
 
 
@@ -783,6 +800,97 @@ void Game::RenderShadowMap()
 		Graphics::BackBufferRTV.GetAddressOf(),
 		Graphics::DepthBufferDSV.Get());
 	Graphics::Context->RSSetState(0);
+}
+
+void Game::PostProcessingSetUp()
+{
+	// Sampler state for post processing
+	D3D11_SAMPLER_DESC ppSampDesc = {};
+	ppSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	ppSampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	Graphics::Device->CreateSamplerState(&ppSampDesc, ppSampler.GetAddressOf());
+
+
+	// Describe the texture we're creating
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = Window::Width();   // FIXED: Use Width for Width
+	textureDesc.Height = Window::Height(); // FIXED: Use Height for Height
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	// Create the resource (no need to track it after the views are created below)
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture;
+	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppTexture.GetAddressOf());
+
+
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	Graphics::Device->CreateRenderTargetView(
+		ppTexture.Get(),
+		&rtvDesc,
+		ppRTV.ReleaseAndGetAddressOf());
+	// Create the Shader Resource View
+	// By passing it a null description for the SRV, we
+	// get a "default" SRV that has access to the entire resource
+	Graphics::Device->CreateShaderResourceView(
+		ppTexture.Get(),
+		0,
+		ppSRV.ReleaseAndGetAddressOf());
+
+	//Set post processing vs and ps
+	ppVS = std::make_shared<SimpleVertexShader>(Graphics::Device, Graphics::Context, FixPath(L"PostProcessingVS.cso").c_str());
+	ppPS = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PostProcessingPSBlur.cso").c_str());
+
+	ppPSCA = std::make_shared<SimplePixelShader>(Graphics::Device, Graphics::Context, FixPath(L"PostProcessingPSChromaticAberation.cso").c_str());
+
+	blurRadiusValue = 1;
+	aberationAmount = 1.0f;
+}
+
+void Game::PostProcessingPreRender()
+{
+	XMFLOAT4 clearColor = XMFLOAT4(1, 0, 0, 1);
+	Graphics::Context->ClearRenderTargetView(ppRTV.Get(), &clearColor.x);
+	Graphics::Context->OMSetRenderTargets(1, ppRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+
+}
+
+void Game::PostProcessingPostRender()
+{
+	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+
+	// Activate shaders and bind resources
+	// Also set any required cbuffer data (not shown)
+	ppVS->SetShader();
+	ppPS->SetInt("type", ppType);
+
+	//Blur
+	ppPS->SetInt("blurRadius", blurRadiusValue);
+	ppPS->SetFloat("pixelWidth", 1.0f / (float)Window::Width());
+	ppPS->SetFloat("pixelHeight", 1.0f / (float)Window::Height());
+
+	//Chromatic Aberation
+	ppPS->SetFloat("aberrationAmount", aberationAmount);
+	ppPS->SetFloat2("aberrationCenter", XMFLOAT2(Window::Width() / 2, Window::Height() / 2));
+
+	ppPS->SetShaderResourceView("Pixels", ppSRV.Get());
+	ppPS->SetSamplerState("ClampSampler", ppSampler.Get());
+	ppPS->CopyAllBufferData();
+	ppPS->SetShader();
+
+	Graphics::Context->Draw(3, 0); // Draw exactly 3 vertices (one triangle)
 }
 
 
